@@ -1,7 +1,7 @@
 @import url(../../common.css);
 
 .btx-label {
-  width: 240px;
+  width: 100%;
   margin: 4px 4px 8px;
   /* font-family: "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif; */
   font-family: Gilroy, Noto Sans CJK TC, Noto Sans TC, Helvetica, Arial,
@@ -25,31 +25,46 @@
 
 .btx-label--small {
   font-size: 12px;
-  padding: 10px 16px;
+  padding: 4px;
 }
 
 .btx-label--medium {
   font-size: 14px;
-  padding: 11px 20px;
+  padding: 4px;
 }
 
 .btx-label--large {
   font-size: 16px;
-  padding: 12px 24px;
+  padding: 4px;
 }
 
 .btx-label--subsection {
-  width: 100%;
-  display: block;
-  border: 0;
-  border-left: 4px solid var(--secondary-primary-100);
-  font-size: 1.5rem;
-}
-
-.btx-label--section {
   width: auto;
   border: 0;
   font-size: 16px;
   font-weight: 700;
   color: var(--secondary-primary-200);
+}
+
+.btx-label--section {
+  width: 100%;
+  display: block;
+  border: 0;
+  border-left: 4px solid var(--secondary-primary-100);
+  font-size: 1.2rem;
+}
+
+@media screen and (min-width: 768px) {
+  .btx-label {
+    width: 240px;
+  }
+  .btx-label--small {
+    padding: 10px 16px;
+  }
+  .btx-label--medium {
+    padding: 11px 20px;
+  }
+  .btx-label--large {
+    padding: 12px 24px;
+  }
 }

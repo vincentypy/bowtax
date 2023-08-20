@@ -28,6 +28,7 @@ interface BtxLabelProps {
    * Optional click handler
    */
   onClick?: () => void;
+  sx?: any;
 }
 
 /**
@@ -40,6 +41,7 @@ export const BtxLabel = ({
   backgroundColor,
   level = "normal",
   label,
+  sx,
   ...props
 }: BtxLabelProps) => {
   const mode = primary ? "btx-label--primary" : "btx-label--secondary";
@@ -52,7 +54,7 @@ export const BtxLabel = ({
         `btx-label--${level}`,
         mode,
       ].join(" ")}
-      style={{ backgroundColor }}
+      style={sx}
       {...props}
     >
       {label}

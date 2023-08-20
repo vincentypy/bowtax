@@ -1433,14 +1433,16 @@ export function showResult(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
     return a[k].condition
   })
   .filter((k) => {
+    // return true;
     return -1 !== k.indexOf("你 及 你 配 偶 應 繳 的 總 税 款") || -1 !== k.indexOf("你 應 繳 的 總 税 款")
   });
 
 
   return out.map((key, idx) => {
     return <p key={idx}>
-      {key.replaceAll(" ", "").split("(")[0]} :
-      {a[key].value}
+      {key.replaceAll(" ", "").split("(")[0]}
+      {": $"}
+      {FormatMoney(a[key].value)}
     </p>
   });
 }

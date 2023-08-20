@@ -20,15 +20,27 @@
 
 .btx-card--small {
   font-size: 12px;
-  padding: 10px 16px;
+  padding: 8px;
 }
 
 .btx-card--medium {
   font-size: 14px;
-  padding: 11px 20px;
+  padding: 8px;
 }
 
 .btx-card--large {
   font-size: 16px;
-  padding: 12px 24px;
+  padding: 8px;
+}
+
+@media screen and (min-width: 768px) {
+  .btx-card--small {
+    padding: 10px 16px;
+  }
+  .btx-card--medium {
+    padding: 11px 20px;
+  }
+  .btx-card--large {
+    padding: 12px 24px;
+  }
 }

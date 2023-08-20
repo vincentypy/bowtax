@@ -153,7 +153,7 @@ function CDbl(s: string) {
     return 0
   }
 }
-function FormatMoney(InNum: number) {
+export function FormatMoney(InNum: number) {
   let tmpStr,NumStr
   let i,k,l
   tmpStr=trimStr(InNum)

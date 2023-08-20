@@ -14,7 +14,7 @@ import StepContent from "@mui/material/StepContent";
 import { BtxHeading } from "../../atoms/BtxHeading/BtxHeading";
 import { BtxCard } from "../../atoms/BtxCard/BtxCard";
 import { BtxSwitch } from "../../atoms/BtxSwitch/BtxSwitch";
-import { BtxFormInputNumber } from "../../atoms/BtxFormInputNumber/BtxFormInputNumber";
+import { BtxFormInputNumber, FormatMoney } from "../../atoms/BtxFormInputNumber/BtxFormInputNumber";
 import { BtxLabel } from "../../atoms/BtxLabel/BtxLabel";
 import { BtxRow } from "../../atoms/BtxRow/BtxRow";
 import { BtxButton } from "../../atoms/BtxButton/BtxButton";
@@ -23,6 +23,29 @@ import { UserInputContext } from "../../../context/UserInput";
 import { BtxTooltip } from "../../atoms/BtxTooltip/BtxTooltip";
 
 (window as any).isDebug = false;
+
+
+function sumDeduct(props: any) {
+  let sum = 0;
+  Object.keys(props).map((key, idx) => {
+    console.log(`${key} => ${props[key]} `);
+    const trimmedStr = `${props[key]}`.replace(",", "");
+    if (trimmedStr === "-99999999999") {
+      return
+    }
+    const val = parseFloat(trimmedStr);
+    if (val != 0 && val != -99999999999) {
+      if (val < 0) {
+        sum = sum - val;
+      } else {
+        sum = sum + val;
+      }
+    }
+    return val
+  });
+
+  return sum;
+}
 
 const BtxStepLabel = styled(StepLabel)`
   svg.Mui-active {
@@ -33,6 +56,19 @@ const BtxStepLabel = styled(StepLabel)`
     color: var(--secondary-brand-100);
   }
 `;
+
+const BtxSelfSpouseHeader = ({t, isMarried}: any) => {
+  return (<div className={"hidden-md"}>
+  <BtxLabel label="" level="subsection" sx={{width: 300}}>{" "}</BtxLabel>
+  <BtxLabel label="" level="subsection">{t("selfDeductionColumn")}</BtxLabel>
+  {isMarried && (
+    <div className="deduct-title">
+      <BtxLabel label="" level="subsection">{t("spouseDeductionColumn")}</BtxLabel>
+    </div>
+  )}
+  <br />
+</div>)
+};
 
 interface BtxCalculatorFormProps {
   /**
@@ -90,6 +126,9 @@ export const BtxCalculatorForm = ({
   const [activeStep, setActiveStep] = React.useState(0);
 
   const [isMarried, setIsMarried] = useState<boolean>(isMarriedState);
+  const [basicAllowance, setBasicAllowance] = useState<number>(132000);
+  const [disabledAllowance, setDisabledAllowance] = useState<number>(75000);
+  const [singParentAllowance, setSingParentAllowance] = useState<number>(132000);
   // const [selfIncome, setSelfIncome] = useState<number>(0); // T1
   // const [spouseIncome, setSpouseIncome] = useState<number>(0); // T2
   // const [selfResidence, setSelfResidence] = useState<number>(0); // T13
@@ -495,111 +534,133 @@ export const BtxCalculatorForm = ({
                   <BtxHeading label={t("Deduction")} />
                   <br />
 
-                  <div className={"hidden-md"}>
-                    <BtxLabel label="" level="section">{" "}</BtxLabel>
-                    <BtxLabel label="" level="section">{t("selfDeductionColumn")}</BtxLabel>
-                    {isMarried && (
-                      <div className="deduct-title">
-                        <BtxLabel label="" level="section">{t("spouseDeductionColumn")}</BtxLabel>
-                      </div>
-                    )}
-                    <br />
-                  </div>
 
-                  <BtxLabel label="">
-                    {t("selfOAndE")}
-                    <BtxTooltip id={"hintSelfOAndE"} label={null} place={"top-start"}>
+                  <BtxLabel label="" level="section">
+                    自願醫保保費開支
+                    <BtxTooltip id={"hintSectionVhis"} label={null} place={"top-start"}>
                       <p className={"btx-tooltip-content"}>
-                        {t("hintSelfOAndE")}
-                        <a href="http://www.gov.hk/tc/residents/taxes/salaries/allowances/deductions/index.htm" target="_blank">（詳情）</a>
+                        {t("hintSectionVhis")}
+                        <a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/deductions/vhis.htm" target="_blank">（詳情）</a>
                       </p>
                     </BtxTooltip>
                   </BtxLabel>
-                  <BtxFormInputNumber
-                    label="selfOAndE"
-                    min={0}
-                    value={selfOAndE}
-                    setValue={(val: any) => setSelfOAndE(val)}
-                    onChange={ (a, e) => { dF.T15.value = e.target.value; } }
-                    onBlur={ (a, e) => { doChecking(15); }}
-                  />
-                  {isMarried && (
-                    <>
-                      {/* <BtxLabel label="">{t("spouseOAndE")}</BtxLabel> */}
-                      <BtxFormInputNumber
-                        label="spouseOAndE"
-                        min={0}
-                        value={spouseOAndE}
-                        setValue={(val: any) => setSpouseOAndE(val)}
-                        onChange={ (a, e) => { dF.T16.value = e.target.value; } }
-                        onBlur={ (a, e) => { doChecking(16); }}
-                      />
-                    </>
-                  )}
                   <br />
 
-                  <BtxLabel label="">
-                    {t("selfEducationExpenses")}
-                    <BtxTooltip id={"hintSelfEducationExpenses"} label={null} place={"top-start"}>
-                      <p className={"btx-tooltip-content"}>
-                        {t("hintSelfEducationExpenses")}
-                      </p>
-                    </BtxTooltip>
-                  </BtxLabel>
-                  <BtxFormInputNumber
-                    label="selfEducationExpenses"
-                    min={0}
-                    value={selfEducationExpenses}
-                    setValue={(val: any) => setSelfEducationExpenses(val)}
-                    onChange={ (a, e) => { dF.T5.value = e.target.value; } }
-                    onBlur={ (a, e) => { doChecking(5); }}
-                  />
-                  {isMarried && (
-                    <>
-                      {/* <BtxLabel label="">{t("spouseEducationExpenses")}</BtxLabel> */}
+                  <BtxRow label="">
+                    <BtxLabel label="" level="subsection">
+                      {t("selfResponsible")}
+                    </BtxLabel>
+                  </BtxRow>
+                  <BtxRow label="">
+                    <BtxLabel label="">
+                      {t("selfVhis")}
+                    </BtxLabel>
+                    <BtxFormInputNumber
+                      label="selfVhis"
+                      min={0}
+                      value={selfVhis}
+                      setValue={(val: any) => setSelfVhis(val)}
+                      onChange={ (a, e) => { dF.T34.value = e.target.value; } }
+                      onBlur={ (a, e) => { doChecking(34); }}
+                    />
+                  </BtxRow>
+                  <BtxRow label="">
+                    <BtxLabel label="">
+                      {t("selfVhisRelateCount")}
+                    </BtxLabel>
+                    <BtxFormInputNumber
+                      label="selfVhisRelateCount"
+                      min={0}
+                      max={4}
+                      value={selfVhisRelateCount}
+                      setValue={(val: any) => setSelfVhisRelateCount(val)}
+                      onChange={ (a, e) => { dF.D32.selectedIndex = e.target.value; } }
+                      onBlur={ (a, e) => { doChecking(36); } }
+                    />
+                  </BtxRow>
+                  <BtxRow label="">
+                    <BtxLabel label="">
+                      {t("selfVhisRelateAmount")}
+                    </BtxLabel>
+                    <BtxFormInputNumber
+                      label="selfVhisRelateAmount"
+                      min={0}
+                      value={selfVhisRelateAmount}
+                      setValue={(val: any) => setSelfVhisRelateAmount(val)}
+                      onChange={ (a, e) => { dF.T36.value = e.target.value; } }
+                      onBlur={ (a, e) => { doChecking(36); } }
+                    />
+                  </BtxRow>
+                  {isMarried && (<>
+                    <BtxRow label="">
+                      <BtxLabel label="" level="subsection">
+                        {t("spouseResponsible")}
+                      </BtxLabel>
+                    </BtxRow>
+                    <BtxRow label="">
+                      <BtxLabel label="">
+                        {t("spouseVhis")}
+                      </BtxLabel>
                       <BtxFormInputNumber
-                        label="spouseEducationExpenses"
+                        label="spouseVhis"
                         min={0}
-                        value={spouseEducationExpenses}
-                        setValue={(val: any) => setSpouseEducationExpenses(val)}
-                        onChange={ (a, e) => { dF.T6.value = e.target.value; } }
-                        onBlur={ (a, e) => { doChecking(6); }}
+                        value={spouseVhis}
+                        setValue={(val: any) => setSpouseVhis(val)}
+                        onChange={ (a, e) => { dF.T35.value = e.target.value; } }
+                        onBlur={ (a, e) => { doChecking(35); }}
                       />
-                    </>
-                  )}
+                    </BtxRow>
+                    <BtxRow label="">
+                      <BtxLabel label="">
+                        {t("spouseVhisRelateCount")}
+                      </BtxLabel>
+                      <BtxFormInputNumber
+                        label="spouseVhisRelateCount"
+                        min={0}
+                        value={spouseVhisRelateCount}
+                        setValue={(val: any) => setSpouseVhisRelateCount(val)}
+                        onChange={ (a, e) => { dF.D33.value = e.target.value; } }
+                        onBlur={ (a, e) => { doChecking(37); } }
+                      />
+                    </BtxRow>
+                    <BtxRow label="">
+                      <BtxLabel label="">
+                        {t("spouseVhisRelateAmount")}
+                      </BtxLabel>
+                      <BtxFormInputNumber
+                        label="spouseVhisRelateAmount"
+                        min={0}
+                        value={spouseVhisRelateAmount}
+                        setValue={(val: any) => setSpouseVhisRelateAmount(val)}
+                        onChange={ (a, e) => { dF.T37.value = e.target.value; } }
+                        onBlur={ (a, e) => { doChecking(37); } }
+                      />
+                    </BtxRow>
+                  </>)}
                   <br />
 
-                  <BtxLabel label="">
-                    {t("selfApprovedDonations")}
-                    <BtxTooltip id={"hintSelfApprovedDonations"} label={null} place={"top-start"}>
-                      <p className={"btx-tooltip-content"}>
-                        {t("hintSelfApprovedDonations")}
-                        <a href="http://www.gov.hk/tc/residents/taxes/salaries/allowances/deductions/approveddonation.htm" target="_blank">（詳情）</a>
-                      </p>
-                    </BtxTooltip>
-                  </BtxLabel>
-                  <BtxFormInputNumber
-                    label="selfApprovedDonations"
-                    min={0}
-                    value={selfApprovedDonations}
-                    setValue={(val: any) => setSelfApprovedDonations(val)}
-                    onChange={ (a, e) => { dF.T3.value = e.target.value; } }
-                    onBlur={ (a, e) => { doChecking(3); }}
-                  />
-                  {isMarried && (
-                    <>
-                      {/* <BtxLabel label="">{t("spouseApprovedDonations")}</BtxLabel> */}
-                      <BtxFormInputNumber
-                        label="spouseApprovedDonations"
-                        min={0}
-                        value={spouseApprovedDonations}
-                        setValue={(val: any) => setSpouseApprovedDonations(val)}
-                        onChange={ (a, e) => { dF.T4.value = e.target.value; } }
-                        onBlur={ (a, e) => { doChecking(4); }}
-                      />
-                    </>
-                  )}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                   <br />
+                  <BtxLabel label="" level="section">
+                    強積金及年金開支
+                  </BtxLabel>
+                  <br />
+
+                  <BtxSelfSpouseHeader t={t} isMarried={isMarried} />
 
                   <BtxLabel label="">
                     {t("selfMPF")}
@@ -697,6 +758,31 @@ export const BtxCalculatorForm = ({
                   )}
                   <br />
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                  <br />
+                  <BtxLabel label="" level="section">
+                  住屋開支
+                  </BtxLabel>
+                  <br />
+
+                  <BtxSelfSpouseHeader t={t} isMarried={isMarried} />
+
                   <BtxLabel label="">
                     {t("selfMPFV2")}
                     <BtxTooltip id={"hintSelfMPFV2"} label={null} place={"top-start"}>
@@ -761,109 +847,27 @@ export const BtxCalculatorForm = ({
                   )}
                   <br />
 
-                  <BtxLabel label="" level="section">
-                    {t("sectionVhis")}
-                    <BtxTooltip id={"hintSectionVhis"} label={null} place={"top-start"}>
-                      <p className={"btx-tooltip-content"}>
-                        {t("hintSectionVhis")}
-                        <a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/deductions/vhis.htm" target="_blank">（詳情）</a>
-                      </p>
-                    </BtxTooltip>
-                  </BtxLabel>
-                  <BtxRow label="">
-                    <BtxLabel label="" level="subsection">
-                      {t("selfResponsible")}
-                    </BtxLabel>
-                  </BtxRow>
-                  <BtxRow label="">
-                    <BtxLabel label="">
-                      {t("selfVhis")}
-                    </BtxLabel>
-                    <BtxFormInputNumber
-                      label="selfVhis"
-                      min={0}
-                      value={selfVhis}
-                      setValue={(val: any) => setSelfVhis(val)}
-                      onChange={ (a, e) => { dF.T34.value = e.target.value; } }
-                      onBlur={ (a, e) => { doChecking(34); }}
-                    />
-                  </BtxRow>
-                  <BtxRow label="">
-                    <BtxLabel label="">
-                      {t("selfVhisRelateCount")}
-                    </BtxLabel>
-                    <BtxFormInputNumber
-                      label="selfVhisRelateCount"
-                      min={0}
-                      max={4}
-                      value={selfVhisRelateCount}
-                      setValue={(val: any) => setSelfVhisRelateCount(val)}
-                      onChange={ (a, e) => { dF.D32.selectedIndex = e.target.value; } }
-                      onBlur={ (a, e) => { doChecking(36); } }
-                    />
-                  </BtxRow>
-                  <BtxRow label="">
-                    <BtxLabel label="">
-                      {t("selfVhisRelateAmount")}
-                    </BtxLabel>
-                    <BtxFormInputNumber
-                      label="selfVhisRelateAmount"
-                      min={0}
-                      value={selfVhisRelateAmount}
-                      setValue={(val: any) => setSelfVhisRelateAmount(val)}
-                      onChange={ (a, e) => { dF.T36.value = e.target.value; } }
-                      onBlur={ (a, e) => { doChecking(36); } }
-                    />
-                  </BtxRow>
-                  {isMarried && (<>
-                    <BtxRow label="">
-                      <BtxLabel label="" level="subsection">
-                        {t("spouseResponsible")}
-                      </BtxLabel>
-                    </BtxRow>
-                    <BtxRow label="">
-                      <BtxLabel label="">
-                        {t("spouseVhis")}
-                      </BtxLabel>
-                      <BtxFormInputNumber
-                        label="spouseVhis"
-                        min={0}
-                        value={spouseVhis}
-                        setValue={(val: any) => setSpouseVhis(val)}
-                        onChange={ (a, e) => { dF.T35.value = e.target.value; } }
-                        onBlur={ (a, e) => { doChecking(35); }}
-                      />
-                    </BtxRow>
-                    <BtxRow label="">
-                      <BtxLabel label="">
-                        {t("spouseVhisRelateCount")}
-                      </BtxLabel>
-                      <BtxFormInputNumber
-                        label="spouseVhisRelateCount"
-                        min={0}
-                        value={spouseVhisRelateCount}
-                        setValue={(val: any) => setSpouseVhisRelateCount(val)}
-                        onChange={ (a, e) => { dF.D33.value = e.target.value; } }
-                        onBlur={ (a, e) => { doChecking(37); } }
-                      />
-                    </BtxRow>
-                    <BtxRow label="">
-                      <BtxLabel label="">
-                        {t("spouseVhisRelateAmount")}
-                      </BtxLabel>
-                      <BtxFormInputNumber
-                        label="spouseVhisRelateAmount"
-                        min={0}
-                        value={spouseVhisRelateAmount}
-                        setValue={(val: any) => setSpouseVhisRelateAmount(val)}
-                        onChange={ (a, e) => { dF.T37.value = e.target.value; } }
-                        onBlur={ (a, e) => { doChecking(37); } }
-                      />
-                    </BtxRow>
-                  </>)}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                   <br />
-
-
                   <BtxLabel label="" level="section">
                     {t("sectionEldery")}
                     <BtxTooltip id={"hintSectionEldery"} label={null} place={"top-start"}>
@@ -873,11 +877,13 @@ export const BtxCalculatorForm = ({
                       </p>
                     </BtxTooltip>
                   </BtxLabel>
-                  <BtxCard label="">
-                    <BtxLabel label="" level="subsection">
-                      {t("selfResponsible")}
-                    </BtxLabel>
+                  <br />
 
+                  <BtxLabel label="" level="subsection">
+                    {t("selfResponsibleEldery")}
+                  </BtxLabel>
+
+                  <>
                     <BtxRow label="">
                       <BtxLabel label="">
                         {t("selfEldery")}
@@ -937,11 +943,11 @@ export const BtxCalculatorForm = ({
                         onBlur={ (a, e) => { doChecking(9); }}
                       />
                     </BtxRow>
-                  </BtxCard>
+                  </>
                   {isMarried && (
-                    <BtxCard label="">
+                    <>
                       <BtxLabel label="" level="subsection">
-                        {t("spouseResponsible")}
+                        {t("spouseResponsibleEldery")}
                       </BtxLabel>
 
                       <BtxRow label="">
@@ -1004,9 +1010,161 @@ export const BtxCalculatorForm = ({
                           onBlur={ (a, e) => { doChecking(10); }}
                         />
                       </BtxRow>
-                    </BtxCard>
+                    </>
                   )}
                   <br />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                  <br />
+                  <BtxLabel label="" level="section">
+                  其他
+                  </BtxLabel>
+                  <br />
+
+                  <BtxSelfSpouseHeader t={t} isMarried={isMarried} />
+
+                  <BtxLabel label="">
+                    {t("selfOAndE")}
+                    <BtxTooltip id={"hintSelfOAndE"} label={null} place={"top-start"}>
+                      <p className={"btx-tooltip-content"}>
+                        {t("hintSelfOAndE")}
+                        <a href="http://www.gov.hk/tc/residents/taxes/salaries/allowances/deductions/index.htm" target="_blank">（詳情）</a>
+                      </p>
+                    </BtxTooltip>
+                  </BtxLabel>
+                  <BtxFormInputNumber
+                    label="selfOAndE"
+                    min={0}
+                    value={selfOAndE}
+                    setValue={(val: any) => setSelfOAndE(val)}
+                    onChange={ (a, e) => { dF.T15.value = e.target.value; } }
+                    onBlur={ (a, e) => { doChecking(15); }}
+                  />
+                  {isMarried && (
+                    <>
+                      {/* <BtxLabel label="">{t("spouseOAndE")}</BtxLabel> */}
+                      <BtxFormInputNumber
+                        label="spouseOAndE"
+                        min={0}
+                        value={spouseOAndE}
+                        setValue={(val: any) => setSpouseOAndE(val)}
+                        onChange={ (a, e) => { dF.T16.value = e.target.value; } }
+                        onBlur={ (a, e) => { doChecking(16); }}
+                      />
+                    </>
+                  )}
+                  <br />
+
+                  <BtxLabel label="">
+                    {t("selfEducationExpenses")}
+                    <BtxTooltip id={"hintSelfEducationExpenses"} label={null} place={"top-start"}>
+                      <p className={"btx-tooltip-content"}>
+                        {t("hintSelfEducationExpenses")}
+                      </p>
+                    </BtxTooltip>
+                  </BtxLabel>
+                  <BtxFormInputNumber
+                    label="selfEducationExpenses"
+                    min={0}
+                    value={selfEducationExpenses}
+                    setValue={(val: any) => setSelfEducationExpenses(val)}
+                    onChange={ (a, e) => { dF.T5.value = e.target.value; } }
+                    onBlur={ (a, e) => { doChecking(5); }}
+                  />
+                  {isMarried && (
+                    <>
+                      {/* <BtxLabel label="">{t("spouseEducationExpenses")}</BtxLabel> */}
+                      <BtxFormInputNumber
+                        label="spouseEducationExpenses"
+                        min={0}
+                        value={spouseEducationExpenses}
+                        setValue={(val: any) => setSpouseEducationExpenses(val)}
+                        onChange={ (a, e) => { dF.T6.value = e.target.value; } }
+                        onBlur={ (a, e) => { doChecking(6); }}
+                      />
+                    </>
+                  )}
+                  <br />
+
+                  <BtxLabel label="">
+                    {t("selfApprovedDonations")}
+                    <BtxTooltip id={"hintSelfApprovedDonations"} label={null} place={"top-start"}>
+                      <p className={"btx-tooltip-content"}>
+                        {t("hintSelfApprovedDonations")}
+                        <a href="http://www.gov.hk/tc/residents/taxes/salaries/allowances/deductions/approveddonation.htm" target="_blank">（詳情）</a>
+                      </p>
+                    </BtxTooltip>
+                  </BtxLabel>
+                  <BtxFormInputNumber
+                    label="selfApprovedDonations"
+                    min={0}
+                    value={selfApprovedDonations}
+                    setValue={(val: any) => setSelfApprovedDonations(val)}
+                    onChange={ (a, e) => { dF.T3.value = e.target.value; } }
+                    onBlur={ (a, e) => { doChecking(3); }}
+                  />
+                  {isMarried && (
+                    <>
+                      {/* <BtxLabel label="">{t("spouseApprovedDonations")}</BtxLabel> */}
+                      <BtxFormInputNumber
+                        label="spouseApprovedDonations"
+                        min={0}
+                        value={spouseApprovedDonations}
+                        setValue={(val: any) => setSpouseApprovedDonations(val)}
+                        onChange={ (a, e) => { dF.T4.value = e.target.value; } }
+                        onBlur={ (a, e) => { doChecking(4); }}
+                      />
+                    </>
+                  )}
+                  <br />
+
+
+
+
+
+                  <br />
+                  <BtxLabel label="" level="subsection">
+                  可扣總支出
+                  </BtxLabel>
+                  <br />
+
+                  本人：<br />
+                  <p>HK ${FormatMoney(sumDeduct({selfVhis, selfVhisRelateAmount, selfMPF, selfMPFV, selfAnnuity, selfMPFV2, selfHomeLoanInterest, selfResidentialAmount, selfOAndE, selfEducationExpenses, selfApprovedDonations}))}</p>
+
+                  {isMarried && (
+                    <>
+                    配偶：<br />
+                    <p>HK ${FormatMoney(sumDeduct({spouseVhis, spouseVhisRelateAmount, spouseMPF, spouseMPFV, spouseAnnuity, spouseMPFV2, spouseHomeLoanInterest, spouseResidentialAmount, spouseOAndE, spouseEducationExpenses, spouseApprovedDonations}))}</p>
+                    </>
+                  )}
+
+
+
+
+
+
 
                   {/* Navigate */}
                   <BtxButton
@@ -1031,11 +1189,45 @@ export const BtxCalculatorForm = ({
               </BtxStepLabel>
               <StepContent>
                 <BtxCard label="card">
-                  <BtxHeading label={t("Allowance")} />
+                  {/* <BtxHeading label={t("Allowance")} /> */}
 
+
+                  <br />
+                  <BtxLabel label="" level="section">
+                  基本免稅額
+                  </BtxLabel>
+                  <br />
+
+                  本人：<br />
+                  <p>HK ${FormatMoney(basicAllowance)}</p>
+
+                  {isMarried && (
+                    <>
+                    配偶：<br />
+                    <p>HK ${FormatMoney(basicAllowance)}</p>
+                    </>
+                  )}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                  <br />
                   <BtxLabel label="" level="section">
                     {t("sectionDiabled")}
                   </BtxLabel>
+                  <br />
+
                   <BtxRow label="">
                     <BtxLabel label="">{t("selfPDA")}</BtxLabel>
                     <BtxSwitch label="Switch" value={selfPDA} onChange={(e, checked) => {
@@ -1052,10 +1244,79 @@ export const BtxCalculatorForm = ({
                           dF.D15b.selectedIndex = checked ? 1 : 0;
                           setSpousePDA(checked);
                         }}
+                        trackLabel1='是' trackLabel2='否'
                       />
                     </BtxRow>
                   )}
                   <br />
+
+
+
+
+
+
+
+
+
+                  {!isMarried && (<>
+                    <br />
+                    <BtxLabel label="" level="section">
+                    單親家庭免稅額
+                    </BtxLabel>
+                    <br />
+  
+                    <BtxRow label="">
+                      <BtxLabel label="">{t("singleParentAllowance")}</BtxLabel>
+                      <BtxSwitch label="Switch" value={singleParentAllowance} onChange={(e, checked) => {
+                          dF.D22.selectedIndex = checked ? 1 : 0;
+                          setSingleParentAllowance(checked);
+                        }}
+                        trackLabel1='是' trackLabel2='否'
+                      />
+                    </BtxRow>
+                    </>
+                  )}
+                  
+
+
+
+
+
+
+
+
+
+
+
+
+                  <br />
+                  <BtxLabel label="" level="subsection">
+                  免稅額
+                  </BtxLabel>
+                  <br />
+
+                  本人：<br />
+                  <p>HK ${FormatMoney(sumDeduct({
+                    basicAllowance,
+                    disabledAllowance: (selfPDA) ? disabledAllowance : 0,
+                    singParentAllowance: (!isMarried && singleParentAllowance) ? singParentAllowance: 0
+                  }))}</p>
+
+                  {isMarried && (
+                    <>
+                    配偶：<br />
+                    <p>HK ${FormatMoney(sumDeduct({
+                      basicAllowance,
+                      disabledAllowance: (spousePDA) ? disabledAllowance : 0
+                    }))}</p>
+                    </>
+                  )}
+
+
+
+
+
+                  
 
                   {/* Navigate */}
                   <BtxButton
@@ -1081,10 +1342,18 @@ export const BtxCalculatorForm = ({
               <StepContent>
                 <BtxCard label="card">
 
+
+
+
+
+                  <br />
                   <BtxLabel label="" level="section">
-                    {t("sectionChildren")}
+                    供養子女免稅額
+                    {/* {t("sectionChildren")} */}
                   </BtxLabel>
-                  <BtxCard label="">
+                  <br />
+
+                  <>
                     <BtxRow label="">
                       <BtxLabel label="">{t("childBornThisYr")}</BtxLabel>
                       <BtxFormInputNumber
@@ -1126,8 +1395,8 @@ export const BtxCalculatorForm = ({
                         }}
                       />
                     </BtxRow>
-                  </BtxCard>
-                  <BtxCard label="">
+                  </>
+                  <>
                     <BtxRow label="">
                       <BtxLabel label="">{t("childBornOtherYr")}</BtxLabel>
                       <BtxFormInputNumber
@@ -1169,65 +1438,34 @@ export const BtxCalculatorForm = ({
                         }}
                       />
                     </BtxRow>
-
-                    <BtxRow label="">
-                      <BtxLabel label="">{t("singleParentAllowance")}</BtxLabel>
-                      <BtxSwitch label="Switch" value={singleParentAllowance} onChange={(e, checked) => {
-                          dF.D22.selectedIndex = checked ? 1 : 0;
-                          setSingleParentAllowance(checked);
-                        }}
-                      />
-                    </BtxRow>
-                  </BtxCard>
+                  </>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                  <br />
                   <BtxLabel label="" level="section">
-                    {t("sectionBroSist")}
+                    供養父母或祖父母或外祖父母免稅額
+                    {/* {t("sectionParents")} */}
                   </BtxLabel>
-                  <BtxCard label="">
-                    <BtxRow label="">
-                      <BtxLabel label="">{t("dependentBrothersSis")}</BtxLabel>
-                      <BtxFormInputNumber
-                        label="dependentBrothersSis"
-                        min={0}
-                        max={9}
-                        value={dependentBrothersSis}
-                        setValue={(val: any) => setDependentBrothersSis(val)}
-                        onChange={ (a, e) => { dF.D5.selectedIndex = e.target.value; } }
-                        onBlur={ (a, e) => {
-                          const val = parseFloat(a.replaceAll(",", ""));
-                          if (Math.abs(disabledDependentBrothersSis) > Math.abs(val)) {
-                            dF.D6.selectedIndex = Math.abs(val) + "";
-                            setDisabledDependentBrothersSis(-Math.abs(val));
-                          }
-                        }}
-                      />
-                    </BtxRow>
+                  <br />
 
-                    <BtxRow label="">
-                      <BtxLabel label="">{t("disabledDependentBrothersSis")}</BtxLabel>
-                      <BtxFormInputNumber
-                        label="disabledDependentBrothersSis"
-                        min={0}
-                        max={9}
-                        value={disabledDependentBrothersSis}
-                        setValue={(val: any) => setDisabledDependentBrothersSis(val)}
-                        onChange={ (a, e) => { dF.D6.selectedIndex = e.target.value; } }
-                        onBlur={ (a, e) => {
-                          const val = parseFloat(a.replaceAll(",", ""));
-                          if (Math.abs(val) > Math.abs(dependentBrothersSis)) {
-                            dF.D6.selectedIndex = Math.abs(dependentBrothersSis) + "";
-                            setDisabledDependentBrothersSis(-Math.abs(dependentBrothersSis));
-                          }
-                        }}
-                      />
-                    </BtxRow>
-                  </BtxCard>
 
-                  <BtxLabel label="" level="section">
-                    {t("sectionParents")}
-                  </BtxLabel>
-                  <BtxCard label="">
+                  <>
                     <BtxLabel label="" level="subsection">
                       {t("subsectionParents60")}
                     </BtxLabel>
@@ -1333,27 +1571,93 @@ export const BtxCalculatorForm = ({
                         onChange={ (a, e) => { dF.D17.selectedIndex = e.target.value; } }
                       />
                     </BtxRow>
-                  </BtxCard>
+                  </>
 
-                  {isMarried && (
+
+
+
+
+
+
+
+
+
+
+                  <br />
+                  <BtxLabel label="" level="section">
+                    供養兄弟姐妹免稅額
+                    {/* {t("sectionBroSist")} */}
+                  </BtxLabel>
+                  <br />
+
+                  <>
                     <BtxRow label="">
-                      <BtxLabel label="">{t("spouseDisabledDependent")}</BtxLabel>
-                      <BtxSwitch label="Switch" value={spouseDisabledDependent} onChange={(e, checked) => {
-                          dF.D15.selectedIndex = checked ? 1 : 0;
-                          setSpouseDisabledDependent(checked);
+                      <BtxLabel label="">{t("dependentBrothersSis")}</BtxLabel>
+                      <BtxFormInputNumber
+                        label="dependentBrothersSis"
+                        min={0}
+                        max={9}
+                        value={dependentBrothersSis}
+                        setValue={(val: any) => setDependentBrothersSis(val)}
+                        onChange={ (a, e) => { dF.D5.selectedIndex = e.target.value; } }
+                        onBlur={ (a, e) => {
+                          const val = parseFloat(a.replaceAll(",", ""));
+                          if (Math.abs(disabledDependentBrothersSis) > Math.abs(val)) {
+                            dF.D6.selectedIndex = Math.abs(val) + "";
+                            setDisabledDependentBrothersSis(-Math.abs(val));
+                          }
                         }}
                       />
                     </BtxRow>
+
+                    <BtxRow label="">
+                      <BtxLabel label="">{t("disabledDependentBrothersSis")}</BtxLabel>
+                      <BtxFormInputNumber
+                        label="disabledDependentBrothersSis"
+                        min={0}
+                        max={9}
+                        value={disabledDependentBrothersSis}
+                        setValue={(val: any) => setDisabledDependentBrothersSis(val)}
+                        onChange={ (a, e) => { dF.D6.selectedIndex = e.target.value; } }
+                        onBlur={ (a, e) => {
+                          const val = parseFloat(a.replaceAll(",", ""));
+                          if (Math.abs(val) > Math.abs(dependentBrothersSis)) {
+                            dF.D6.selectedIndex = Math.abs(dependentBrothersSis) + "";
+                            setDisabledDependentBrothersSis(-Math.abs(dependentBrothersSis));
+                          }
+                        }}
+                      />
+                    </BtxRow>
+                  </>
+
+
+                  {isMarried && (<>
+                      <br />
+                      <BtxLabel label="" level="section">
+                        傷殘配偶受養人
+                      </BtxLabel>
+                      <br />
+
+                      <BtxRow label="">
+                        <BtxLabel label="">{t("spouseDisabledDependent")}</BtxLabel>
+                        <BtxSwitch label="Switch" value={spouseDisabledDependent} onChange={(e, checked) => {
+                            dF.D15.selectedIndex = checked ? 1 : 0;
+                            setSpouseDisabledDependent(checked);
+                          }}
+                          trackLabel1='是' trackLabel2='否'
+                        />
+                      </BtxRow>
+                    </>
                   )}
                 </BtxCard>
               </StepContent>
             </Step>
           </Stepper>
 
-          <BtxCard label="">
+          <>
             <BtxButton
               label={t("resetForm")}
-              primary={true}
+              primary={false}
               onClick={(e) => {
                 localResetForm();
               }}
@@ -1365,7 +1669,7 @@ export const BtxCalculatorForm = ({
                 doCalculation();
               }}
             ></BtxButton>
-          </BtxCard>
+          </>
         </BtxCard>
       </div>
 
