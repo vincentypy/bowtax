@@ -108,18 +108,20 @@ export const BtxSwitch = ({
             borderRadius: 26 / 2,
             opacity: 1,
             '&:before, &:after': {
-              content: (trackLabel1 && trackLabel2) ? (value ? trackLabel1 : trackLabel2) :'""',
+              content: '""',
               position: 'absolute',
               top: '50%',
               transform: 'translateY(-50%)',
               width: 16,
               height: 16,
-              color: value ? "#FFF" : "#FFF"
+              color: "#FFF"
             },
             '&:before': {
+              backgroundImage: trackLabel1 && `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="16" width="16" viewBox="0 0 24 24"><text x="0" y="18" class="track-small-label" font-size="18px" fill="%23FFFFFF" font-family="Arial, Helvetica, sans-serif">${trackLabel1}</text></svg>')`,
               left: 8,
             },
             '&:after': {
+              backgroundImage: trackLabel2 && `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="16" width="16" viewBox="0 0 24 24"><text x="0" y="18" class="track-small-label" font-size="18px" fill="%23FFFFFF" font-family="Arial, Helvetica, sans-serif">${trackLabel2}</text></svg>')`,
               right: 8,
             },
           },

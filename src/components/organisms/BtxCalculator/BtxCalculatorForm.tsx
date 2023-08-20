@@ -1042,7 +1042,7 @@ export const BtxCalculatorForm = ({
                         dF.D15a.selectedIndex = checked ? 1 : 0;
                         setSelfPDA(checked);
                       }}
-                      trackLabel1='"是"' trackLabel2='"否"'
+                      trackLabel1='是' trackLabel2='否'
                     />
                   </BtxRow>
                   {isMarried && (
