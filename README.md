@@ -1,6 +1,24 @@
-# Getting Started with Create React App
+# Bowtie salary tax calulator
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+- ref: [HK Govt Tax Calculators](https://www.gov.hk/tc/residents/taxes/etax/services/tax_computation.htm#TaxComputation)
+- ref: [報稅2023懶人包｜免稅額扣稅項目/網上報稅教學/遲交罰款/計算機](https://www.hk01.com/%E7%86%B1%E7%88%86%E8%A9%B1%E9%A1%8C/895425/%E5%A0%B1%E7%A8%852023%E6%87%B6%E4%BA%BA%E5%8C%85-%E5%85%8D%E7%A8%85%E9%A1%8D%E6%89%A3%E7%A8%85%E9%A0%85%E7%9B%AE-%E7%B6%B2%E4%B8%8A%E5%A0%B1%E7%A8%85%E6%95%99%E5%AD%B8-%E9%81%B2%E4%BA%A4%E7%BD%B0%E6%AC%BE-%E8%A8%88%E7%AE%97%E6%A9%9F)
+- UI ref: [保險個人化建議 | 保泰人壽 | Bowtie](https://www.bowtie.com.hk/zh/insurance/recommendation/result)
+
+## TODO
+
+- [ ] Data coolection from Context
+- [ ] mobile UI
+- [ ] error hint
+- [ ] versioning on Github Page
+
+## Information will be collected
+
+- Marital Status
+- Income
+- No. of owned property
+- No. of children
+- No. of dependents (eg retired parents)
+- No. of VHIS policies
 
 ## Available Scripts
 
@@ -29,18 +47,6 @@ Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-### `yarn eject`
+### `yarn storybook`
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+Start Storybook to view the components

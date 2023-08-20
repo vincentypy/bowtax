@@ -1,0 +1,35 @@
+@import url(../../common.css);
+
+.btx-option {
+  font-family: "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 400;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-block;
+  line-height: 1;
+}
+
+.btx-option--primary {
+  color: #333;
+}
+
+.btx-option--secondary {
+  color: #333;
+  box-shadow: rgba(0, 0, 0, 0.15) 0 0 0 1px inset;
+}
+
+.btx-option--small {
+  font-size: 12px;
+  padding: 10px 16px;
+}
+
+.btx-option--medium {
+  font-size: 14px;
+  padding: 11px 20px;
+}
+
+.btx-option--large {
+  font-size: 16px;
+  padding: 12px 24px;
+}

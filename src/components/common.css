@@ -1,0 +1,35 @@
+:root {
+  --brand-color: #ff0068;
+  --primary-color: #191357;
+
+  --secondary-brand-100: #610051;
+  --secondary-brand-200: #f192b3;
+  --secondary-brand-300: #f9d2de;
+  --secondary-brand-400: #fce5f1;
+
+  --secondary-primary-100: #1a1d56;
+  --secondary-primary-200: #848bac;
+  --secondary-primary-300: #ced2e2;
+  --secondary-primary-400: #e1e6f0;
+
+  --text-color-primary: #333;
+  --background-color: #FFF;
+}
+
+html {
+  font-feature-settings: "kern";
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizelegibility;
+}
+
+:root .dark {
+  --text-color-primary: #FFF;
+  --background-color: #343434;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-color-primary: #FFF;
+    --background-color: #343434;
+  }
+}

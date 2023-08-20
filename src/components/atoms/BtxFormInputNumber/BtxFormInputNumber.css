@@ -1,0 +1,70 @@
+@import url(../../common.css);
+
+.hidden-md {
+  display: none;
+}
+
+.btx-input-number-wrapper {
+  margin: 4px;
+  display: inline-block;
+  position: relative;
+}
+
+.btx-input-number {
+  width: 100%;
+  font-family: "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 400;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-block;
+  line-height: 1;
+}
+
+.btx-input-number--primary {
+  color: #333;
+}
+
+.btx-input-number--secondary {
+  color: #333;
+  box-shadow: rgba(0, 0, 0, 0.15) 0 0 0 1px inset;
+}
+
+.btx-input-number--small {
+  font-size: 12px;
+  padding: 10px 16px;
+}
+
+.btx-input-number--medium {
+  font-size: 14px;
+  padding: 11px 20px;
+}
+
+.btx-input-number--large {
+  font-size: 16px;
+  padding: 12px 24px;
+}
+
+.btx-input-label-sm {
+  padding: 0 3px;
+  display: inline-block;
+  font-size: 10px;
+  line-height: 5px;
+  position: absolute;
+  top: 0;
+  left: 12px;
+  background-color: var(--background-color);
+}
+
+@media screen and (min-width: 768px) {
+  .hidden-md {
+    display: block;
+  }
+  .btx-input-number {
+    max-width: 150px;
+    width: auto;
+  }
+  .btx-input-label-sm {
+    display: none;
+  }
+}

@@ -1,0 +1,3804 @@
+﻿<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=big5">
+<meta http-equiv="Pragma" content="no-cache">
+<title>計 算 薪 俸 稅</title>
+<script src="jquery.js" type="text/javascript"></script>
+</head>
+<SCRIPT LANGUAGE="JavaScript">
+<!--
+//var browserID
+var dF
+var LSPYrEnd
+var rbflag
+var iTAX_RATE = new Array(17)
+var iTAX_RANGE = new Array(16)
+var firstview
+rbflag = false
+//************************************************
+//*                                              *
+//*          INITIALIZATION FUNCTIONS            *
+//*                                              *
+//************************************************
+function initPage()
+{
+  dF=document.fI
+  restorefrmIn()
+  if (parent.JustLoaded)
+  {
+    //selectYear()
+    parent.JustLoaded=false
+  }
+  if (parent.firstview==true) {
+	B2OnClick()
+  }
+  GetDeduction()
+  Calculating=false
+}
+function HasNBCA(Yr) {
+//   if (Yr=="2007-2008") {
+   if (Yr.substring(0, 4) >= 2007) {
+      return true
+   } else {
+      return false
+   }
+}
+//************************************************
+//*                                              *
+//*       VBScript FUNCTION REPLACEMENT          *
+//*                                              *
+//************************************************
+function leftStr(s,i) {
+  var s1
+  s1=""+s
+  return s1.substring(0,i)
+}
+function rightStr(s,i) {
+  var s1,l
+  s1=""+s
+  l=s1.length
+  return s1.substring(l-i,l)
+}
+function trimStr(s) {
+  var s1,i,j,l,Chrs2Trim
+  s1=""+s
+  l=s1.length
+  if (l==0) return ""
+  Chrs2Trim=" \t"
+  i=0
+  while (i<l && Chrs2Trim.indexOf(s1.charAt(i))>-1) {
+    i++
+  }
+  j=l-1
+  while (j>=0 && Chrs2Trim.indexOf(s1.charAt(j))>-1) {
+    j--
+  }
+  if (i<=j) {
+    return s1.substring(i,j-i+1)
+  } else {
+    return ""
+  }
+}
+function CInt(s) {
+  var s1
+  s1=trimComma(s)
+  if (s1.length>0) {
+    return parseInt(s1)
+  } else {
+    return 0
+  }
+}
+function CDbl(s) {
+  var s1
+  s1=trimComma(s)
+  if (s1.length>0) {
+    return parseFloat(s1)
+  } else {
+    return 0
+  }
+}
+function trimComma(s) {
+  var s1,l,rs,i,c
+  s1=trimStr(s)
+  l=s1.length
+  rs=""
+  for (i=0; i<l; i++) {
+    c=s1.charAt(i)
+    if (c!=",") rs=rs+c
+  }
+  return rs
+}
+function FormatMoney(InNum) {
+  var tmpStr,NumStr
+  var i,j,k,l
+  tmpStr=trimStr(InNum)
+  NumStr=tmpStr
+  l=tmpStr.length
+  j=Math.floor((l-1)/3)-1
+  for (i=0; i<=j; i++) {
+    k=3+i*4
+    NumStr=leftStr(tmpStr,l-k)+","+rightStr(tmpStr,k)
+    tmpStr=NumStr
+    l=l+1
+  }
+  return NumStr
+}
+//************************************************
+//*                                              *
+//*            WEB NAVIGATION SUPPORT            *
+//*                                              *
+//************************************************
+function goToPage(htmlfile) {
+  var url,i
+  if (htmlfile.substring(0,5).toLowerCase()=="http:") {    // Is complete URL ?
+    parent.location.href=htmlfile
+  } else {		// relative path only
+    url=""+document.location
+    url=url.toLowerCase()
+    i=url.lastIndexOf("/")
+    if (i==-1) i=url.lastIndexOf("\\")
+    url=url.substring(0,i+1)+htmlfile
+    parent.location.href=url
+  }
+}
+//************************************************
+//*                                              *
+//*            INPUT VALIDATION MODULE           *
+//*                                              *
+//************************************************
+var oT3="",oT4=""		// previous content of the textboxes (Approved Charitable Donations)
+var T3tag="0",T4tag="0"		// Approved Charitable Donations for joint assessment
+var oT1="0",oT2="0"		// previous content of the textboxes (Self Income and Spouse Income)
+var oT11="",oT12=""		// previous content of the textboxes (Contributions to MPF)
+var T11tag="0",T12tag="0"	//
+var oT13="0",oT14="0"		// previous content of the textboxes (Self & Spouse Value of All Places of Residence Provided)
+var slic=false,spic=false	// Boolean (Self Income changed, Spouse Income changed)
+var slvr=false,spvr=false   // Boolean (Change of Self & Spouse Value of All Places of Residence Provided)
+function TxtOnFocus(obj) {
+  if (obj.value=="0") {
+    obj.value=""
+  } else {
+//    obj.select()	// The Effect is not satisfactory
+  }
+}
+function T1OnBlur() {
+  var Income,MustReset,ValueResidence
+  MustReset=false
+  Income=FormatInput(dF.T1.value,0,999999999)
+  if (Income=="*") {
+    ErrMsg("你輸入的數值不正確 !")
+    MustReset=true
+  } else if (Income=="+") {
+    ErrMsg("你不可輸入超過 9 位數字的數值 !")
+    MustReset=true
+  }
+  if (MustReset) {
+    Income=""
+	if (dF.D15a.selectedIndex=="1") {
+		ErrMsg("由於你沒有入息，因此你不能申請傷殘人士免稅額。")
+		dF.D15a.selectedIndex=0
+	}
+    dF.T1.focus()
+  }
+  if (Income=="0") {
+  	dF.D15.selectedIndex=0
+  	dF.T13.value="0"
+	if (dF.D15a.selectedIndex=="1") {
+		ErrMsg("由於你沒有入息，因此你不能申請傷殘人士免稅額。")
+		dF.D15a.selectedIndex=0
+	}
+  }
+  dF.T1.value=Income
+  if (Income!="") {
+    ValueResidence=FormatInput(dF.T13.value,0,999999999)
+    if (ValueResidence!="") {
+      if (CDbl(dF.T13.value) > ((LimP_rate_VAPRP/100)*CDbl(dF.T1.value))) {
+	  	ErrMsg("你輸入港元" + ValueResidence + "。獲提供居所的租值不可超過你入息的" + LimP_rate_VAPRP + "％。")
+  		dF.T13.value="0"
+  		dF.T13.focus()
+  	  }
+    }
+    slic=(Income!=oT1)
+    oT1=Income
+    ChkDD(0)
+  }
+}
+function T2OnBlur() {
+  var Income,obj,MustReset,ValueResidence
+  MustReset=false
+  Income=FormatInput(dF.T2.value,0,999999999)
+  obj=dF.D2
+  if (obj[0].checked && Income!="0") {
+    ErrMsg("由於你並非已婚人士，因此你不能輸入配偶的入息。")
+    MustReset=true
+  } else if (Income=="*") {
+    ErrMsg("你輸入的數值不正確 !")
+    MustReset=true
+  } else if (Income=="+") {
+    ErrMsg("你不可輸入超過 9 位數字的數值 !")
+    MustReset=true
+  }
+  if (MustReset) {
+    Income=""
+	if (dF.D15b.selectedIndex=="1") {
+		ErrMsg("由於你的配偶沒有入息，因此不能申請你配偶的傷殘人士免稅額。")
+		dF.D15b.selectedIndex=0
+	}	
+    dF.T2.focus()
+  }
+  if (Income=="0") {
+  	dF.T14.value="0"
+	if (dF.D15b.selectedIndex=="1") {
+		ErrMsg("由於你的配偶沒有入息，因此不能申請你配偶的傷殘人士免稅額。")
+		dF.D15b.selectedIndex=0
+	}
+  }
+  dF.T2.value=Income
+  if (Income!="") {
+    ValueResidence=FormatInput(dF.T14.value,0,999999999)
+    if (ValueResidence!="") {
+      if (CDbl(dF.T14.value) > ((LimP_rate_VAPRP/100)*CDbl(dF.T2.value))) {
+	  	ErrMsg("你輸入港元" + ValueResidence + "。獲提供居所的租值不可超過你入息的" + LimP_rate_VAPRP + "％。")
+  		dF.T14.value="0"
+  		dF.T14.focus()
+  	  }
+    }
+    spic=(Income!=oT2)
+    oT2=Income
+    ChkDD(0)
+  }
+}
+function T13OnBlur() {
+  var Income,MustReset,ValueResidence
+  MustReset=false
+  Income=FormatInput(dF.T1.value,0,999999999)
+  ValueResidence=FormatInput(dF.T13.value,0,999999999)
+  if (ValueResidence=="*") {
+    ErrMsg("你輸入的數值不正確 !")
+    MustReset=true
+  } else if (ValueResidence=="+") {
+    ErrMsg("你不可輸入超過 9 位數字的數值 !")
+    MustReset=true
+  } else if (CDbl(dF.T13.value) > ((LimP_rate_VAPRP/100)*CDbl(dF.T1.value))) {
+  	ErrMsg("你輸入港元" + ValueResidence + "。獲提供居所的租值不可超過你入息的" + LimP_rate_VAPRP + "％。")
+  	MustReset=true
+  }
+  if (MustReset) {
+    ValueResidence=""
+    dF.T13.focus()
+  }
+  dF.T13.value=ValueResidence
+  if (ValueResidence!="") {
+    slvr=(ValueResidence!=oT13)
+    oT13=ValueResidence
+    ChkDD(0)
+  }
+}
+function T14OnBlur() {
+  var Income,obj,MustReset,ValueResidence
+  MustReset=false
+  Income=FormatInput(dF.T2.value,0,999999999)
+  ValueResidence=FormatInput(dF.T14.value,0,999999999)
+  obj=dF.D2
+  if (obj[0].checked && ValueResidence!="0") {
+    ErrMsg("由於你並非已婚人士，因此你不能輸入配偶的獲提供居所的租值。")
+    MustReset=true
+  } else if (ValueResidence=="*") {
+    ErrMsg("你輸入的數值不正確 !")
+    MustReset=true
+  } else if (ValueResidence=="+") {
+    ErrMsg("你不可輸入超過 9 位數字的數值 !")
+    MustReset=true
+  } else if (CDbl(dF.T14.value) > ((LimP_rate_VAPRP/100)*CDbl(dF.T2.value))) {
+  	ErrMsg("你輸入港元" + ValueResidence + "。獲提供居所的租值不可超過你入息的" + LimP_rate_VAPRP + "％。")
+  	MustReset=true
+  }
+  if (MustReset) {
+    ValueResidence=""
+    dF.T14.focus()
+  }
+  dF.T14.value=ValueResidence
+  if (ValueResidence!="") {
+    spvr=(ValueResidence!=oT14)
+    oT14=ValueResidence
+    ChkDD(0)
+  }
+}
+// Check all deduction availability and validity
+function ChkDD(X) {
+  var MsgID,iv,lv,uv,a,b,v1,vc
+  var obj,i
+  var slfDDreseted,spsDDreseted
+  var slfHasIncome, spsHasIncome, slfACDChanged, spsACDChanged
+  spsHasIncome=(NotNIL(dF.T2))
+  slfHasIncome=(NotNIL(dF.T1))
+  obj=dF.D2
+  MsgID=0
+  slfDDreseted=false
+  spsDDreseted=false
+  if (obj[0].checked) {
+//	if (NotNIL(dF.T4) || NotNIL(dF.T10) || dF.D19.selectedIndex>0 || dF.D21.selectedIndex>0) {
+	if (dF.D19.selectedIndex>0 || dF.D21.selectedIndex>0 || NotNIL(dF.T4) || NotNIL(dF.T10) || NotNIL(dF.T39) || NotNIL(dF.T41)) {
+		MsgID=4
+		ClrTxt(dF.T4)
+		ClrTxt(dF.T10)
+		ClrTxt(dF.T39)
+		ClrTxt(dF.T41)
+		dF.D19.selectedIndex=0
+		dF.D21.selectedIndex=0
+	}
+  }
+  // Income is zero ?
+  if (IsNIL(dF.T1) && spsHasIncome) {
+    if (NotNIL(dF.T3) || NotNIL(dF.T9) || dF.D18.selectedIndex>0 || dF.D20.selectedIndex>0 || NotNIL(dF.T34) || NotNIL(dF.T40) || dF.D32.selectedIndex>0 || NotNIL(dF.T36)) {
+      ClrTxt(dF.T3)
+      ClrTxt(dF.T9)
+      ClrTxt(dF.T34)
+      ClrTxt(dF.T36)
+//      ClrTxt(dF.T38)
+      ClrTxt(dF.T40)
+      dF.D32.selectedIndex=0
+      dF.D18.selectedIndex=0
+      dF.D20.selectedIndex=0
+      MsgID=2.8
+      slfDDreseted=true
+    }
+    oT3=""; T3tag="0"
+    oT11=""; T11tag="0"
+  }
+  if (IsNIL(dF.T1)) {
+    if (NotNIL(dF.T3) || NotNIL(dF.T5) || NotNIL(dF.T9) || NotNIL(dF.T11) || dF.D18.selectedIndex>0 || dF.D20.selectedIndex>0 || NotNIL(dF.T15) || NotNIL(dF.T34) || NotNIL(dF.T36) || NotNIL(dF.T38) || NotNIL(dF.T40) || dF.D32.selectedIndex>0) {
+      ClrTxt(dF.T3)
+      ClrTxt(dF.T5)
+      ClrTxt(dF.T9)
+      dF.D18.selectedIndex=0
+      dF.D20.selectedIndex=0
+      ClrTxt(dF.T11)
+      ClrTxt(dF.T15)
+      ClrTxt(dF.T34)
+      ClrTxt(dF.T36)
+      ClrTxt(dF.T38)
+      ClrTxt(dF.T40)
+      dF.D32.selectedIndex=0
+      MsgID=2
+      slfDDreseted=true
+    }
+    oT3=""; T3tag="0"
+    oT11=""; T11tag="0"
+  }
+  if (IsNIL(dF.T2) && slfHasIncome) {
+    if (obj[0].checked) {
+/*		if (NotNIL(dF.T4) || NotNIL(dF.T10) || NotNIL(dF.T41)) {
+		MsgID=4
+		ClrTxt(dF.T4)
+		ClrTxt(dF.T10)
+		ClrTxt(dF.T41)
+		spsDDreseted=true
+		} else { if (NotNIL(dF.T4) || NotNIL(dF.T10) || NotNIL(dF.T39) || NotNIL(dF.T41) || dF.D19.selectedIndex>0 || dF.D21.selectedIndex>0 ) {*/
+//		if (NotNIL(dF.T4) || NotNIL(dF.T10) || NotNIL(dF.T39) || NotNIL(dF.T41) || dF.D19.selectedIndex>0 || dF.D21.selectedIndex>0 ) {
+		if (NotNIL(dF.T4) || NotNIL(dF.T10) || NotNIL(dF.T41) || dF.D19.selectedIndex>0 || dF.D21.selectedIndex>0 ) {
+			ClrTxt(dF.T4)
+			ClrTxt(dF.T10)
+			ClrTxt(dF.T39)
+			ClrTxt(dF.T41)
+			ClrTxt(dF.T35)
+			dF.D33.selectedIndex=0
+			dF.D19.selectedIndex=0
+			dF.D21.selectedIndex=0
+			MsgID=2.9
+			spsDDreseted=true
+		}
+//    }}	
+    }
+    oT4=""; T4tag="0"
+    oT12=""; T12tag="0"
+  }
+  if (IsNIL(dF.T2)) {
+    if (NotNIL(dF.T4) || NotNIL(dF.T6) || NotNIL(dF.T10) || NotNIL(dF.T12) || dF.D19.selectedIndex>0 || dF.D21.selectedIndex>0 || NotNIL(dF.T16) || NotNIL(dF.T35) || NotNIL(dF.T37)  || NotNIL(dF.T39) || NotNIL(dF.T41) || dF.D33.selectedIndex>0 ) {
+      if (obj[0].checked) {	// Single ?
+        MsgID=4
+      } else {
+//			if (slfHasIncome && (NotNIL(dF.T4) || NotNIL(dF.T10) || NotNIL(dF.T35) || NotNIL(dF.T37) || NotNIL(dF.T39)  || NotNIL(dF.T41) || dF.D19.selectedIndex>0 || dF.D33.selectedIndex>0 )) {
+			if (slfHasIncome && (NotNIL(dF.T4) || NotNIL(dF.T10) || NotNIL(dF.T35) || NotNIL(dF.T37) || NotNIL(dF.T41) || dF.D19.selectedIndex>0 || dF.D33.selectedIndex>0 )) {
+				MsgID=2.9
+			} else {
+				MsgID=2.5
+			}	
+      }
+      ClrTxt(dF.T4)
+      ClrTxt(dF.T6)
+      ClrTxt(dF.T10)
+      dF.D19.selectedIndex=0
+      dF.D21.selectedIndex=0
+      ClrTxt(dF.T12)
+      ClrTxt(dF.T16)
+      ClrTxt(dF.T35)
+      ClrTxt(dF.T37)
+      ClrTxt(dF.T39)
+      ClrTxt(dF.T41)
+      dF.D33.selectedIndex=0
+      spsDDreseted=true
+    }
+    oT4=""; T4tag="0"
+    oT12=""; T12tag="0"
+  }
+  // Check self donation
+  vc=(dF.T3.value!=oT3)
+  if ((X==3 && vc) || NotNIL(dF.T3)) {
+    lv=LimD_DonaLL
+    if (IsNIL(dF.T1)) {
+      uv=0
+    } else {
+      uv=Math.floor(LimD_DonaUL*(CDbl(dF.T1.value)+CDbl(dF.T13.value)-CDbl(dF.T15.value))/100)
+    }
+    oT3=""
+    if (vc) T3tag="0"
+    if (NotNIL(dF.T3)) {
+      iv=FormatInput(dF.T3.value,lv,uv)
+      a=FormatInput(dF.T3.value,0,99999999999)
+      v1="0"
+      if (iv=="*") {
+        MsgID=1
+      } else if (iv=="-") {
+        MsgID=5
+        b=a
+      } else {
+        v1=a
+        if (vc) T3tag=a
+        if (iv=="+") {
+          if (uv>=lv) {
+            v1=FormatInput(uv,0,99999999999)
+          } else {
+            v1="0"
+          }
+          if (spsHasIncome) {
+          	MsgID=6.5
+          } else {
+          	MsgID=6
+          }
+         	b=a
+        }
+      }
+      if (v1=="0") {
+        oT3=""
+      } else {
+        oT3=v1
+      }
+      SetTxt(dF.T3,v1)
+      if (T3tag==v1) {
+      	slfACDChanged=false
+      } else {
+	      slfACDChanged=true
+      }
+			// 12/2012 reset T3tag to cap of donation allowed
+      T3tag=v1
+    }
+  }
+  // Check spouse donation
+  vc=(dF.T4.value!=oT4)
+  spsHasIncome=(NotNIL(dF.T1))
+  if ((X==4 && vc) || NotNIL(dF.T4)) {
+    lv=LimD_DonaLL
+    if (IsNIL(dF.T2)) {
+      uv=0
+    } else {
+//      uv=Math.floor(LimD_DonaUL*CDbl(dF.T2.value)/100)
+      uv=Math.floor(LimD_DonaUL*(CDbl(dF.T2.value)+CDbl(dF.T14.value)-CDbl(dF.T16.value))/100)
+    }
+    oT4=""
+    if (vc) T4tag="0"
+    if (NotNIL(dF.T4)) {
+      iv=FormatInput(dF.T4.value,lv,uv)
+      a=FormatInput(dF.T4.value,0,99999999999)
+      v1="0"
+      if (iv=="*") {
+        MsgID=1
+      } else if (iv=="-") {
+        MsgID=5
+        b=a
+      } else {
+        v1=a
+        if (vc) T4tag=a
+        if (iv=="+") {
+          if (uv>=lv) {
+            v1=FormatInput(uv,0,99999999999)
+          } else {
+            v1="0"
+          }
+          if (spsHasIncome) {
+          	MsgID=6.8
+          } else {
+          	MsgID=6.3
+          }
+         	b=a
+        }
+      }
+      if (v1=="0") {
+        oT4=""
+      } else {
+        oT4=v1
+      }
+      SetTxt(dF.T4,v1)
+      if (T4tag==v1) {
+      	spsACDChanged=false
+      } else {
+	      spsACDChanged=true
+      }
+			// 12/2012 reset T4tag to cap of donation allowed
+      T4tag=v1      
+    }
+  }
+ // Check MPF voluntary contributions and Annuity Premiums
+  if (X==38) {
+	  if (NotNIL(dF.T38)) {
+		iv=FormatInput(dF.T38.value,0,LimD_VTC)
+		a=FormatInput(dF.T38.value,0,99999999999)
+		v1="0"
+		if (YrEnd<2020 && iv!="0") {
+		  MsgID=3
+		  b=2020
+		} else if (iv=="*") {
+		  MsgID=1
+		} else if (iv=="+") {
+		  MsgID=11
+		  b=a
+		  v1=FormatMoney(LimD_VTC) 
+		  SetTxt(dF.T40,0)
+		} else {
+		  v1=iv
+		  if (NotNIL(dF.T40)) {
+			var x,y 
+			x=Math.floor(Math.abs(CDbl(dF.T38.value)))
+			y=Math.floor(Math.abs(CDbl(dF.T40.value)))
+			if ((x+y)>LimD_VTC) {
+				b=a
+				MsgID=11
+				SetTxt(dF.T40, FormatMoney(Math.floor(Math.abs(LimD_VTC-x))) )
+			}
+		  }
+		}
+		SetTxt(dF.T38,v1)
+	  }
+  }
+  if (X==40) {
+	  if (NotNIL(dF.T40)) {
+		var newLimD_VTC = LimD_VTC
+		if (NotNIL(dF.T38)) {
+			var b
+			b=Math.floor(Math.abs(CDbl(dF.T38.value)))
+			newLimD_VTC=newLimD_VTC-b
+		}
+		iv=FormatInput(dF.T40.value,0,newLimD_VTC)
+		a=FormatInput(dF.T40.value,0,99999999999)
+		v1="0"	
+		if (YrEnd<2020 && iv!="0") {
+		  MsgID=3
+		  b=2020
+		} else if (iv=="*") {
+		  MsgID=1
+		} else if (iv=="+") {
+		  MsgID=11
+		  b=a
+		  v1=FormatMoney(newLimD_VTC) 
+		} else {
+		  v1=iv
+		}
+		SetTxt(dF.T40,v1)
+	  }
+  }
+ // Check MPF voluntary contributions and Annuity Premiums
+  if (X==39) {  
+	  if (NotNIL(dF.T39)) {
+		if (obj[0].checked) {  // Single ?
+		  MsgID=4
+		  ClrTxt(dF.T39)
+		} else {
+			iv=FormatInput(dF.T39.value,0,LimD_VTC)
+			a=FormatInput(dF.T39.value,0,99999999999)
+			v1="0"
+			if (YrEnd<2020 && iv!="0") {
+			  MsgID=3
+			  b=2020
+			} else if (iv=="*") {
+			  MsgID=1
+			} else if (iv=="+") {
+			  MsgID=11
+			  b=a
+			  v1=FormatMoney(LimD_VTC)
+			  SetTxt(dF.T41,0)
+			} else {
+			  v1=iv
+			  if (NotNIL(dF.T41)) {
+				var x,y 
+				x=Math.floor(Math.abs(CDbl(dF.T39.value)))
+				y=Math.floor(Math.abs(CDbl(dF.T41.value)))
+				if ((x+y)>LimD_VTC) {
+					b=a
+					MsgID=11
+					SetTxt(dF.T41, FormatMoney(Math.floor(Math.abs(LimD_VTC-x))) )
+				}
+			  }
+			} 
+			SetTxt(dF.T39,v1)
+		}
+	  }
+  }
+  if (X==41) {
+	  if (NotNIL(dF.T41)) {
+		  if (obj[0].checked) {  // Single ?
+			MsgID=4
+			ClrTxt(dF.T41)
+		  } else {
+			var newLimD_VTC = LimD_VTC
+			if (NotNIL(dF.T39)) {
+				var b
+				b=Math.floor(Math.abs(CDbl(dF.T39.value)))
+				newLimD_VTC=newLimD_VTC-b
+			}
+			iv=FormatInput(dF.T41.value,0,newLimD_VTC)
+			a=FormatInput(dF.T41.value,0,99999999999)
+			v1="0"	
+			if (YrEnd<2020 && iv!="0") {
+				MsgID=3
+				b=2020
+			} else if (iv=="*") {
+				MsgID=1
+			} else if (iv=="+") {
+				MsgID=11
+				b=a
+				v1=FormatMoney(newLimD_VTC) 
+			} else {
+				v1=iv
+			}
+			SetTxt(dF.T41,v1)
+		  }
+	  }
+  }
+  // Check Self Education Expenses
+  if (NotNIL(dF.T5)) {
+    iv=FormatInput(dF.T5.value,0,LimD_Education)
+    a=FormatInput(dF.T5.value,0,99999999999)
+    v1="0"
+    if (YrEnd<1997 && iv!="0") {
+      MsgID=3
+      b=1997
+    } else if (iv=="*") {
+      MsgID=1
+    } else if (iv=="+") {
+      MsgID=7
+      b=a
+      v1=FormatMoney(LimD_Education)
+    } else {
+      v1=iv
+    }
+    SetTxt(dF.T5,v1)
+  }
+  if (NotNIL(dF.T6)) {
+    iv=FormatInput(dF.T6.value,0,LimD_Education)
+    a=FormatInput(dF.T6.value,0,99999999999)
+    v1="0"
+    if (YrEnd<1997 && iv!="0") {
+      MsgID=3
+      b=1997
+    } else if (iv=="*") {
+      MsgID=1
+    } else if (iv=="+") {
+      MsgID=7
+      b=a
+      v1=FormatMoney(LimD_Education)
+    } else {
+      v1=iv
+    }
+    SetTxt(dF.T6,v1)
+  }
+  // Check Home Loan Interest
+  if (NotNIL(dF.T7)) {
+    iv=FormatInput(dF.T7.value,0,LimD_HomeLoan)
+    a=FormatInput(dF.T7.value,0,99999999999)
+    v1="0"
+    if (YrEnd<1999 && iv!="0") {
+      MsgID=3
+      b=1999
+    } else if (iv=="*") {
+      MsgID=1
+    } else if (iv=="+") {
+      MsgID=8
+      b=a
+      v1=FormatMoney(LimD_HomeLoan)
+    } else {
+      v1=iv
+    }
+    SetTxt(dF.T7,v1)
+  }
+  if (NotNIL(dF.T8)) {
+    if (obj[0].checked) {  // Single ?
+      MsgID=4
+      ClrTxt(dF.T8)
+    } else {
+      iv=FormatInput(dF.T8.value,0,LimD_HomeLoan)
+      a=FormatInput(dF.T8.value,0,99999999999)
+      v1="0"
+      if (YrEnd<1999 && iv!="0") {
+        MsgID=3
+        b=1999
+      } else if (iv=="*") {
+        MsgID=1
+      } else if (iv=="+") {
+        MsgID=8
+        b=a
+        v1=FormatMoney(LimD_HomeLoan)
+      } else {
+        v1=iv
+      }
+      SetTxt(dF.T8,v1)
+    }
+  }
+  // Check Elderly Residential Care Expenses
+  if (NotNIL(dF.T9)) {
+    iv=FormatInput(dF.T9.value,0,LimD_Elderly*dF.D18.selectedIndex)
+    a=FormatInput(dF.T9.value,0,99999999999)
+    v1="0"
+    if (YrEnd<1999 && iv!="0") {
+      MsgID=3
+      b=1999
+    } else if (iv=="*") {
+      MsgID=1
+    } else if (iv=="+") {
+      MsgID=9
+      b=a
+      v1=FormatMoney(LimD_Elderly*dF.D18.selectedIndex)
+    } else {
+      v1=iv
+    }
+    SetTxt(dF.T9,v1)
+  }
+  if (NotNIL(dF.T10)) {
+    iv=FormatInput(dF.T10.value,0,LimD_Elderly*dF.D19.selectedIndex)
+    a=FormatInput(dF.T10.value,0,99999999999)
+    v1="0"
+    if (YrEnd<1999 && iv!="0") {
+      MsgID=3
+      b=1999
+    } else if (iv=="*") {
+      MsgID=1
+    } else if (iv=="+") {
+      MsgID=9
+      b=a
+      v1=FormatMoney(LimD_Elderly*dF.D19.selectedIndex)
+    } else {
+      v1=iv
+    }
+    SetTxt(dF.T10,v1)
+  }
+  // Check VHIS
+  if (NotNIL(dF.T34)) {
+    iv=FormatInput(dF.T34.value,0,LimD_VHIS)
+    a=FormatInput(dF.T34.value,0,99999999999)
+    v1="0"
+    if (YrEnd<2020 && iv!="0") {
+      MsgID=3
+      b=2020
+    } else if (iv=="*") {
+      MsgID=1
+    } else if (iv=="+") {
+      MsgID=12
+      b=a
+      v1=FormatMoney(LimD_VHIS)
+    } else {
+      v1=iv
+    }
+    SetTxt(dF.T34,v1)
+  }
+  if (NotNIL(dF.T35)) {
+    iv=FormatInput(dF.T35.value,0,LimD_VHIS)
+    a=FormatInput(dF.T35.value,0,99999999999)
+    v1="0"
+    if (YrEnd<2020 && iv!="0") {
+      MsgID=3
+      b=2020
+    } else if (iv=="*") {
+      MsgID=1
+    } else if (iv=="+") {
+      MsgID=12
+      b=a
+      v1=FormatMoney(LimD_VHIS)
+    } else {
+      v1=iv
+    }
+    SetTxt(dF.T35,v1)
+  }
+  // Check VHIS
+  if (NotNIL(dF.T36)) {
+    iv=FormatInput(dF.T36.value,0,LimD_VHIS*dF.D32.selectedIndex)
+    a=FormatInput(dF.T36.value,0,99999999999)
+    v1="0"
+    if (YrEnd<2020 && iv!="0") {
+      MsgID=3
+      b=2020
+    } else if (iv=="*") {
+      MsgID=1
+    } else if (iv=="+") {
+      MsgID=13
+      b=a
+      v1=FormatMoney(LimD_VHIS*dF.D32.selectedIndex)
+    } else {
+      v1=iv
+    }
+    SetTxt(dF.T36,v1)
+  }
+  if (NotNIL(dF.T37)) {
+    iv=FormatInput(dF.T37.value,0,LimD_VHIS*dF.D33.selectedIndex)
+    a=FormatInput(dF.T37.value,0,99999999999)
+    v1="0"
+    if (YrEnd<2020 && iv!="0") {
+      MsgID=3
+      b=2020
+    } else if (iv=="*") {
+      MsgID=1
+    } else if (iv=="+") {
+      MsgID=13
+      b=a
+      v1=FormatMoney(LimD_VHIS*dF.D33.selectedIndex)
+    } else {
+      v1=iv
+    }
+    SetTxt(dF.T37,v1)
+  }  
+  // Check Self Mandatory Contributions to MPF Schemes
+  vc=(dF.T11.value!=oT11)
+  if ((X==11 && vc) || NotNIL(dF.T11)) {
+    if (IsNIL(dF.T1)) {
+      uv=0
+    } else {
+//      uv=Math.floor(LimD_rate_MPF*CDbl(dF.T1.value)/100)		// limit by percentage of income
+//      if (uv>LimD_MPF) {						// limit by value
+        uv=LimD_MPF
+//      }
+    }
+    oT11=""
+    if (vc) T11tag="0"
+    if (NotNIL(dF.T11)) {
+      iv=FormatInput(dF.T11.value,0,uv)
+      a=FormatInput(dF.T11.value,0,99999999999)
+      v1="0"
+      if (YrEnd<2001 && iv!="0") {
+        MsgID=3
+        b=2001
+      } else if (iv=="*") {
+        MsgID=1
+      } else {
+        v1=a
+        if (vc) T11tag=a
+        if (iv=="+") {
+          v1=FormatInput(uv,0,99999999999)
+          MsgID=10
+          b=a
+        }
+      }
+      if (v1=="0") {
+        oT11=""
+      } else {
+        oT11=v1
+      }
+      SetTxt(dF.T11,v1)
+    }
+  }
+  // Check Spouse Mandatory Contributions to MPF Schemes
+  vc=(dF.T12.value!=oT12)
+  if ((X==12 && vc) || NotNIL(dF.T12)) {
+    if (IsNIL(dF.T2)) {
+      uv=0
+    } else {
+      uv=Math.floor(LimD_rate_MPF*CDbl(dF.T2.value)/100)		// limit by percentage of income
+//      uv=Math.floor(LimD_rate_MPF*(CDbl(dF.T2.value)+CDbl(dF.T14.value))/100)		// limit by percentage of income
+//      if (uv>LimD_MPF) {						// limit by value
+        uv=LimD_MPF
+//      }
+    }
+    oT12=""
+    if (vc) T12tag="0"
+    if (NotNIL(dF.T12)) {
+      iv=FormatInput(dF.T12.value,0,uv)
+      a=FormatInput(dF.T12.value,0,99999999999)
+      v1="0"
+      if (YrEnd<2001 && iv!="0") {
+        MsgID=3
+        b=2001
+      } else if (iv=="*") {
+        MsgID=1
+      } else {
+        v1=a
+        if (vc) T12tag=a
+        if (iv=="+") {
+          v1=FormatInput(uv,0,99999999999)
+          MsgID=10
+          b=a
+        }
+      }
+      if (v1=="0") {
+        oT12=""
+      } else {
+        oT12=v1
+      }
+      SetTxt(dF.T12,v1)
+    }
+  }
+  // Check Self Outgoings and Expenses
+  if (NotNIL(dF.T15)) {
+     if (IsNIL(dF.T1)) {
+        iv=0
+     } else {
+        iv=FormatInput(dF.T15.value,0,999999999)
+     }
+     if (iv=="*") {
+        MsgID=1
+        v1=0
+     } else if (iv=="+") {
+        MsgID=1.5
+        v1=0
+     } else {
+        v1=iv
+     }
+     SetTxt(dF.T15,v1)
+  }
+  // Check Spouse Outgoings and Expenses
+  if (NotNIL(dF.T16)) {
+     if (IsNIL(dF.T2)) {
+        iv=0
+     } else {
+        iv=FormatInput(dF.T16.value,0,999999999)
+     }
+     if (iv=="*") {
+        MsgID=1
+        v1=0
+     } else if (iv=="+") {
+        MsgID=1.5
+        v1=0
+     } else {
+        v1=iv
+     }
+     SetTxt(dF.T16,v1)
+  }
+  // Display error message if necessary
+  if (X>0) {
+    if (MsgID==1) ErrMsg("你輸入的數值不正確 !")
+    else if (MsgID==1.5) ErrMsg("你不可輸入超過 9 位數字的數值 !")
+    else if (MsgID==2) ErrMsg("由於你沒有入息，因此你不能申請扣除。")
+    else if (MsgID==2.5) ErrMsg("由於你配偶沒有入息，因此你配偶不能申請扣除。")
+    else if (MsgID==2.8) ErrMsg("由於你沒有入息，因此你不能申請扣除，你可把有關數額於配偶一方內輸入。")
+    else if (MsgID==2.9) ErrMsg("由於你配偶沒有入息，因此你配偶不能申請扣除，你可把有關數額於本人一方內輸入。")	
+    else if (MsgID==3) ErrMsg("這項扣除由" + (b-1)+"/"+rightStr(b,2) + "課稅年度起開始生效。")
+    else if (MsgID==4) ErrMsg("由於你並非已婚人士，因此你不能輸入配偶的扣除。")
+    else if (MsgID==5) ErrMsg("你輸入港元" + b + "。 認可慈善捐款須達一百元或以上方可申請扣除。")
+    else if (MsgID==6) InfoMsg("你輸入港元" + b + "。 認可慈善捐款扣除額不可超出你入息的"+CInt(LimD_DonaUL)+" %。")
+    else if (MsgID==6.3) InfoMsg("你輸入港元" + b + "。 認可慈善捐款扣除額不可超出你配偶入息的"+CInt(LimD_DonaUL)+" %。")
+    else if (MsgID==6.5) InfoMsg("你輸入港元" + b + "。 認可慈善捐款扣除額不可超出你入息的"+CInt(LimD_DonaUL)+" %，你可把餘下的慈善捐款數額於配偶一方內輸入。")
+    else if (MsgID==6.8) InfoMsg("你輸入港元" + b + "。 認可慈善捐款扣除額不可超出你配偶入息的"+CInt(LimD_DonaUL)+" %，你可把餘下的慈善捐款數額於本人一方內輸入。")
+    else if (MsgID==7) ErrMsg("你輸入港元" + b + "。 個人進修開支最高扣除額為港元" + FormatMoney(LimD_Education) + "。")
+    else if (MsgID==8) ErrMsg("你輸入港元" + b + "。 居所貸款利息最高扣除額為港元" + FormatMoney(LimD_HomeLoan) + "。")
+    else if (MsgID==9) ErrMsg("你輸入港元" + b + "。 長者住宿照顧開支扣除額不可超過在安老院居住的受養人數目 x 每位受養人最高扣除額港元" + FormatMoney(LimD_Elderly) + "。")
+    else if (MsgID==10) InfoMsg("你輸入港元" + b + "。 認可退休計劃的強制性供款最高扣除額為港元"+FormatMoney(LimD_MPF)+"。")
+    else if (MsgID==11) InfoMsg("你輸入港元" + b + "。 強積金自願性供款及合資格年金保費扣除總額的最高扣除額為港元" + FormatMoney(LimD_VTC) + "。")
+    else if (MsgID==12) InfoMsg("你輸入港元" + b + "。 合資格醫療保險保費扣除額每人最高扣除額為港元" + FormatMoney(LimD_VHIS) + "。")
+    else if (MsgID==13) InfoMsg("你輸入港元" + b + "。 合資格醫療保險保費扣除額不可超過親屬數目 x 每人最高扣除額港元" + FormatMoney(LimD_VHIS) + "。")
+    if (X==3) NullZero(dF.T3,MsgID)
+    else if (X==4) NullZero(dF.T4,MsgID)
+    else if (X==5) NullZero(dF.T5,MsgID)
+    else if (X==6) NullZero(dF.T6,MsgID)
+    else if (X==7) NullZero(dF.T7,MsgID)
+    else if (X==8) NullZero(dF.T8,MsgID)
+    else if (X==9) NullZero(dF.T9,MsgID)
+	else if (X==10) NullZero(dF.T10,MsgID)
+    else if (X==11) NullZero(dF.T11,MsgID)
+    else if (X==12) NullZero(dF.T12,MsgID)
+    else if (X==15) NullZero(dF.T15,MsgID)
+    else if (X==16) NullZero(dF.T16,MsgID)
+    else if (X==34) NullZero(dF.T34,MsgID)
+	else if (X==35) NullZero(dF.T35,MsgID)
+    else if (X==36) NullZero(dF.T36,MsgID)
+    else if (X==37) NullZero(dF.T37,MsgID)
+    else if (X==38) NullZero(dF.T38,MsgID)
+	else if (X==39) NullZero(dF.T39,MsgID)
+    else if (X==40) NullZero(dF.T40,MsgID)
+    else if (X==41) NullZero(dF.T41,MsgID)
+  } else {	// ChkDD triggered by fields other than Deduction Inputs (such as Income or Assessment year)
+    // Account for change of income on Charitable Donations, Contribution to MPF
+    // and reset of any deduction to zero because income changed to zero
+    if (slic || slvr) {
+      if (slic && (CInt(T3tag)>0)) {
+      	slfACDChanged=true
+      }	
+      slic=false
+      slvr=false
+      vc=false
+      v1=dF.T3.value
+      if (v1=="") v1="0"
+//      if (v1!=T3tag) vc=true
+      if (slfACDChanged) vc=true
+      v1=dF.T11.value
+      if (v1=="") v1="0"
+      if (v1!=T11tag) vc=true
+      if (slfDDreseted) vc=true
+      if (vc) {
+        InfoMsg("由於總入息有改變，可減免扣除的最高限額也相應改變。請考慮重新輸入。")
+      }
+    }
+    if (spic || spvr) {
+      if (spic && (CInt(T4tag)>0)) {
+      	spsACDChanged=true
+      }	
+      spic=false
+      spvr=false
+      vc=false
+      v1=dF.T4.value
+      if (v1=="") v1="0"
+//      if (v1!=T4tag) vc=true
+      if (spsACDChanged) vc=true
+      v1=dF.T12.value
+      if (v1=="") v1="0"
+      if (v1!=T12tag) vc=true
+      if (spsDDreseted) vc=true
+      if (vc) {
+        InfoMsg("由於總入息有改變，可減免扣除的最高限額也相應改變。請考慮重新輸入。")
+      }
+    }
+    // Account for change of assessment year on various deductions
+    if (X==-1 && MsgID!=0) {
+      InfoMsg("因為課稅年度有改變，可減免扣除的最高限額也相應改變。請考慮重新輸入。")
+    }
+  }
+} // End ChkDD
+function NullZero(obj,e) {
+// update if there is new error code
+  e=Math.floor(e)
+  if (e==0 || e==6 || e==7 || e==8 || e==9 || e==10  || e==11 || e==12 || e==13) {
+    if (IsNIL(obj)) obj.value="0"
+  } else {
+    obj.value=""
+    obj.focus()
+  }
+}
+function SetTxt(obj,v) {
+  if (obj.value!=v) obj.value=v
+}
+function FormatInput(IncStr,ll,ul) {
+  var Istr
+  Istr = trimStr(IncStr)
+  if (Istr=="") {
+    return "0"
+  } else if (!IsNumber(Istr)) {
+    return "*"
+  } else if (Math.abs(CDbl(Istr))<ll) {
+    return "-"
+  } else if (Math.abs(CDbl(Istr))>ul) {
+    return "+"
+  } else {
+    return FormatMoney(Math.floor(Math.abs(CDbl(Istr))))
+  }
+}
+function IsNumber(Istr) {
+  var AllowChars,i
+  AllowChars="0123456789,"
+  for (i=0; i<Istr.length; i++) {
+    if (AllowChars.indexOf(Istr.charAt(i))==-1) {
+      return false
+    }
+  }
+  return true
+}
+function IsNIL(obj) {
+  var AllowChars,i,ov
+  AllowChars="0 "
+  ov=obj.value
+  for (i=0; i<ov.length; i++) {
+    if (AllowChars.indexOf(ov.charAt(i))==-1) {
+      return false
+    }
+  }
+  return true
+}
+function NotNIL(obj) {
+  return !IsNIL(obj)
+}
+function ClrTxt(obj) {
+//  if (obj.value!="" && obj.value!="0") obj.value="0"
+  obj.value="0"
+}
+function D1OnChange() {
+  YrValue=dF.D1.options[dF.D1.selectedIndex].value
+  YrEnd=parseInt(rightStr(YrValue,4),10)
+  if (YrEnd < 1995) {		// before 94/95
+      //No dependent grandparent allowance
+      //dF.D11.selectedIndex=0
+      //dF.D13.selectedIndex=0
+  }
+  if (YrEnd < 1996) {		// before 95/96
+      //No disabled dependent allowance
+      dF.D4.selectedIndex=0
+      dF.D8.selectedIndex=0
+      dF.D10.selectedIndex=0
+      //dF.D12.selectedIndex=0
+      //dF.D14.selectedIndex=0
+      dF.D15.selectedIndex=0
+  }
+  if (YrEnd < 1997) {		// before 96/97
+      //No dependent brother/sister allowance
+      dF.D5.selectedIndex=0
+      dF.D6.selectedIndex=0
+  }
+  if (YrEnd < 1999) {		// before 98/99
+      //No elderly residential care expenses
+      dF.D18.selectedIndex=0
+      dF.D19.selectedIndex=0
+      dF.D20.selectedIndex=0
+      dF.D21.selectedIndex=0
+  }
+  if (YrEnd < 2006) {		// before 2005/06
+      //No special dependent parent/grandparent allowance
+      dF.D16.selectedIndex=0
+      dF.D17.selectedIndex=0
+  }
+  GetDeduction()
+  ChkDD(-1)
+}
+function D2OnClick() {
+  var obj
+  obj=dF.D2
+  if (obj[0].checked) {		// Single ?
+    dF.T2.value="0"
+    dF.T14.value="0"
+    dF.D15.selectedIndex=0
+    dF.D15b.selectedIndex=0	
+  }
+  if (obj[1].checked) {		// Married ?
+    dF.D22.selectedIndex=0
+  }  
+  ChkDD(0)
+}
+function D3OnChange() {
+  if (dF.D4.selectedIndex>dF.D3.selectedIndex) {
+    dF.D4.selectedIndex=dF.D3.selectedIndex
+  }
+//  if (HasNBCA("2021-2022")) {
+	  if (dF.D3.selectedIndex + dF.D3a.selectedIndex > 9) {
+	     ErrMsgDDA2()
+	     setTimeout("dF.D3.selectedIndex = 9 - dF.D3a.selectedIndex", 1)
+	  }
+//  }
+}
+function D4OnChange() {
+  if (dF.D4.selectedIndex>0) {
+    if (!CheckYear(1996)) {
+      setTimeout("dF.D4.selectedIndex=0", 1)
+    } else if (dF.D4.selectedIndex>dF.D3.selectedIndex) {
+      ErrMsgDDA()
+      setTimeout("dF.D4.selectedIndex=dF.D3.selectedIndex", 1)
+    }
+  }
+}
+function D3aOnChange() {
+  if (dF.D4a.selectedIndex>dF.D3a.selectedIndex) {
+    dF.D4a.selectedIndex=dF.D3a.selectedIndex
+  }
+  if (dF.D3.selectedIndex + dF.D3a.selectedIndex > 9) {
+     ErrMsgDDA2()
+     setTimeout("dF.D3a.selectedIndex = 9 - dF.D3.selectedIndex", 1)
+  }
+}
+function D4aOnChange() {
+  if (dF.D4a.selectedIndex>0) {
+    if (!CheckYear(1996)) {
+      setTimeout("dF.D4a.selectedIndex=0", 1)
+    } else if (dF.D4a.selectedIndex>dF.D3a.selectedIndex) {
+      ErrMsgDDA()
+      setTimeout("dF.D4a.selectedIndex=dF.D3a.selectedIndex", 1)
+    }
+  }
+}
+function D5OnChange() {
+  var Num
+  Num=dF.D5.selectedIndex
+  if (Num>0) {
+    if (!CheckYear(1997)) {
+      setTimeout("dF.D5.selectedIndex=0", 1)
+      Num=0
+    }
+  }
+  if (dF.D6.selectedIndex>Num) {
+    dF.D6.selectedIndex=Num
+  }
+}
+function D6OnChange() {
+  if (dF.D6.selectedIndex>0) {
+    if (!CheckYear(1997)) {
+      setTimeout("dF.D6.selectedIndex=0", 1)
+    } else if (dF.D6.selectedIndex>dF.D5.selectedIndex) {
+      ErrMsgDDA()
+      setTimeout("dF.D6.selectedIndex=dF.D5.selectedIndex", 1)
+    }
+  }
+}
+function D7OnChange() {
+  if (dF.D8.selectedIndex>dF.D7.selectedIndex) {
+    dF.D8.selectedIndex=dF.D7.selectedIndex
+  }
+}
+function D8OnChange() {
+  if (dF.D8.selectedIndex>0) {
+    if (!CheckYear(1996)) {
+      setTimeout("dF.D8.selectedIndex=0", 1)
+    } else if (dF.D8.selectedIndex>dF.D7.selectedIndex) {
+      ErrMsgDDA()
+      setTimeout("dF.D8.selectedIndex=dF.D7.selectedIndex", 1)
+    }
+  }
+}
+function D9OnChange() {
+  if (dF.D10.selectedIndex>dF.D9.selectedIndex) {
+    dF.D10.selectedIndex=dF.D9.selectedIndex
+  }
+}
+function D10OnChange() {
+  if (dF.D10.selectedIndex>0) {
+    if (!CheckYear(1996)) {
+      setTimeout("dF.D10.selectedIndex=0", 1)
+    } else if (dF.D10.selectedIndex>dF.D9.selectedIndex) {
+      ErrMsgDDA()
+      setTimeout("dF.D10.selectedIndex=dF.D9.selectedIndex", 1)
+    }
+  }
+}
+function D15OnChange() {
+  var ErrStr,obj
+  if (dF.D15.selectedIndex==1) {
+    ErrStr=""
+    obj=dF.D2
+    if (obj[0].checked) ErrStr="由於你並非已婚人士，因此你不能輸入「傷殘配偶」的項目。"
+    if (YrEnd < 1996) {
+      if (ErrStr!="") ErrStr="1. "+ErrStr+"\n2. "
+      ErrStr=ErrStr+"這項免稅額由1995/96開始提供。"
+    }
+    if (ErrStr!="") ErrMsg(ErrStr)
+    if (ErrStr!="" || dF.T1.value=="0") {
+      setTimeout("dF.D15.selectedIndex=0", 1)
+    }
+  }
+}
+function D16OnChange() {
+  if (dF.D16.selectedIndex>0) {
+    if (!CheckYear(2006)) {
+      setTimeout("dF.D16.selectedIndex=0", 1)
+    }
+  }
+}
+function D17OnChange() {
+  if (dF.D17.selectedIndex>0) {
+    if (!CheckYear(2006)) {
+      setTimeout("dF.D17.selectedIndex=0", 1)
+    }
+  }
+}
+function D18OnChange() {
+  if (dF.D18.selectedIndex>0) {
+    if (!CheckDDYear(1999)) {
+      setTimeout("dF.D18.selectedIndex=0",1)
+    }
+  }
+  if (dF.D20.selectedIndex>dF.D18.selectedIndex) {
+    setTimeout("dF.D20.selectedIndex=dF.D18.selectedIndex",1)
+  }
+  ChkDD(9)
+}
+function D32OnChange() {
+  if (dF.D32.selectedIndex>0) {
+    if (!CheckDDYear(2020)) {
+      setTimeout("dF.D32.selectedIndex=0",1)
+    }
+  }
+  ChkDD(36)
+}
+function D33OnChange() {
+  if (dF.D32.selectedIndex>0) {
+    if (!CheckDDYear(2020)) {
+      setTimeout("dF.D33.selectedIndex=0",1)
+    }
+  }
+  ChkDD(37)
+}
+function D19OnChange() {
+  if (dF.D19.selectedIndex>0) {
+    if (!CheckDDYear(1999)) {
+      setTimeout("dF.D19.selectedIndex=0",1)
+    }
+  }
+  if (dF.D21.selectedIndex>dF.D19.selectedIndex) {
+    setTimeout("dF.D21.selectedIndex=dF.D19.selectedIndex",1)
+  }
+  ChkDD(10)
+}
+function D20OnChange() {
+  if (dF.D20.selectedIndex>dF.D18.selectedIndex) {
+    ErrMsg("傷殘受養人數目不能超出在安老院居住的受養人數目。")
+    setTimeout("dF.D20.selectedIndex=dF.D18.selectedIndex",1)
+  }
+}
+function D21OnChange() {
+  if (dF.D21.selectedIndex>dF.D19.selectedIndex) {
+    ErrMsg("傷殘受養人數目不能超出在安老院居住的受養人數目。")
+    setTimeout("dF.D21.selectedIndex=dF.D19.selectedIndex",1)
+  }
+}
+function D22OnChange() {
+  var ErrStr,obj
+  if (dF.D22.selectedIndex==1) {
+    ErrStr=""
+    obj=dF.D2
+    if (obj[1].checked) ErrStr="由於你是已婚人士，所以不能申請單親免稅額。"
+    if (ErrStr!="") ErrMsg(ErrStr)
+    if (ErrStr!="" || (dF.D3a.selectedIndex+dF.D3.selectedIndex)=="0") {
+      setTimeout("dF.D22.selectedIndex=0", 1)
+    }
+  }
+}
+function D15aOnChange() {
+  var ErrStr,obj
+  if (dF.D15a.selectedIndex==1) {
+    ErrStr=""
+    if (dF.T1.value=="0") ErrStr="由於你沒有入息，因此你不能申請傷殘人士免稅額。"
+    if (ErrStr!="") ErrMsg(ErrStr)
+    if (ErrStr!="" || (dF.T1.value=="0" )) {
+      setTimeout("dF.D15a.selectedIndex=0", 1)
+    }
+  }
+}
+function D15bOnChange() {
+  var ErrStr,obj
+  if (dF.D15b.selectedIndex==1) {
+    ErrStr=""
+    obj=dF.D2
+    if (obj[0].checked) {
+		ErrStr="由於你並非已婚人士，因此你不能輸入配偶的傷殘人士免稅額。"
+	} else {
+		if (dF.T2.value=="0") ErrStr="由於你的配偶沒有入息，因此不能申請你配偶的傷殘人士免稅額。"
+	}
+    if (ErrStr!="") ErrMsg(ErrStr)
+    if (ErrStr!="" || (dF.T2.value=="0")) {
+      setTimeout("dF.D15b.selectedIndex=0", 1)
+    }
+  }
+}
+function B2OnClick() {
+  //dF.D1.selectedIndex=0
+  dF.D2[0].checked=true
+  dF.D3.selectedIndex=0
+  dF.D4.selectedIndex=0
+  dF.D5.selectedIndex=0
+  dF.D6.selectedIndex=0
+  dF.D7.selectedIndex=0
+  dF.D8.selectedIndex=0
+  dF.D9.selectedIndex=0
+  dF.D10.selectedIndex=0
+  dF.D15.selectedIndex=0
+  dF.D15a.selectedIndex=0
+  dF.D15b.selectedIndex=0
+  dF.D16.selectedIndex=0
+  dF.D17.selectedIndex=0
+  dF.D18.selectedIndex=0
+  dF.D19.selectedIndex=0
+  dF.D20.selectedIndex=0
+  dF.D21.selectedIndex=0
+  dF.D22.selectedIndex=0
+  dF.T1.value="0"
+  dF.T2.value="0"
+  dF.T3.value="0"
+  dF.T4.value="0"
+  dF.T5.value="0"
+  dF.T6.value="0"
+  dF.T7.value="0"
+  dF.T8.value="0"
+  dF.T9.value="0"
+  dF.T10.value="0"
+  dF.T11.value="0"
+  dF.T12.value="0"
+  //Clear donations for joint assessment
+  oT3=""; T3tag="0"
+  oT4=""; T4tag="0"
+  //Clear old values for Contribution to MPF
+  oT11=""; T11tag="0"
+  oT12=""; T12tag="0"
+  //setTimeout("selectYear(); dF.D1.focus()",1)
+//  if (HasNBCA("2021-2022")) {
+    dF.D3a.selectedIndex=0
+    dF.D4a.selectedIndex=0
+//  }
+  dF.T13.value="0"
+  dF.T14.value="0"
+  dF.T15.value="0"
+  dF.T16.value="0"
+  dF.T38.value="0"
+  dF.T39.value="0"
+  dF.T40.value="0"
+  dF.T41.value="0"
+  dF.T34.value="0"
+  dF.T35.value="0"
+  dF.T36.value="0"  
+  dF.T37.value="0"
+  dF.D32.selectedIndex=0
+  dF.D33.selectedIndex=0
+}
+function CheckYear(Yr) {
+  if (Yr > YrEnd) {
+    ErrMsg("這項免稅額由" + (Yr-1)+"/"+rightStr(Yr,2) + "課稅年度起開始生效。")
+    return false
+  } else {
+    return true
+  }
+}
+function CheckDDYear(Yr) {
+  if (Yr > YrEnd) {
+    ErrMsg("這項扣除額由" + (Yr-1)+"/"+rightStr(Yr,2) + "課稅年度起開始生效。")
+    return false
+  } else {
+    return true
+  }
+}
+function ErrMsgDDA() {
+  ErrMsg("傷殘受養人數目不能超出受養人數目。")
+}
+function ErrMsgDDA2() {
+  ErrMsg("受養人總數目不能超出最大受養人數目。")
+}
+function ErrMsg(MsgStr) {
+  if (Calculating) return
+  alert(MsgStr)
+}
+function InfoMsg(MsgStr) {
+  if (Calculating) return
+  alert(MsgStr)
+}
+//*************************************************
+//*                                               *
+//*        FOR RESTORING INPUT ENTRIES            *
+//*       WHEN GO BACK FROM RESULT PAGE           *
+//*                                               *
+//*************************************************
+function savefrmIn() {
+  var mfI,obj
+  mfI=parent.frmInStatus
+//  mfI[0] = dF.D1.selectedIndex
+  obj = dF.D2
+  if (obj[0].checked) {
+    mfI[1] = true
+  } else {
+    mfI[1] = false
+  }
+  mfI[2] = dF.D3.selectedIndex
+  mfI[3] = dF.D4.selectedIndex
+  mfI[4] = dF.D5.selectedIndex
+  mfI[5] = dF.D6.selectedIndex
+  mfI[6] = dF.D7.selectedIndex
+  mfI[7] = dF.D8.selectedIndex
+  mfI[8] = dF.D9.selectedIndex
+  mfI[9] = dF.D10.selectedIndex
+  //mfI[10] = dF.D11.selectedIndex
+  //mfI[11] = dF.D12.selectedIndex
+  //mfI[12] = dF.D13.selectedIndex
+  //mfI[13] = dF.D14.selectedIndex
+  mfI[14] = dF.D15.selectedIndex
+  mfI[15] = dF.T1.value
+  mfI[16] = dF.T2.value
+  mfI[17] = dF.T3.value
+  mfI[18] = dF.T4.value
+  mfI[19] = dF.T5.value
+  mfI[20] = dF.T6.value
+  mfI[21] = dF.T7.value
+  mfI[22] = dF.T8.value
+  mfI[23] = dF.T9.value
+  mfI[24] = dF.T10.value
+  mfI[25] = dF.T11.value
+  mfI[26] = dF.T12.value
+  mfI[27] = T3tag
+  mfI[28] = T4tag
+  mfI[29] = T11tag
+  mfI[30] = T12tag
+  mfI[31] = oT1
+  mfI[32] = oT2
+  mfI[33] = oT3
+  mfI[34] = oT4
+  mfI[35] = oT11
+  mfI[36] = oT12
+  mfI[37] = dF.D16.selectedIndex
+  mfI[38] = dF.D17.selectedIndex
+  mfI[39] = dF.D18.selectedIndex
+  mfI[40] = dF.D19.selectedIndex
+  mfI[41] = dF.D20.selectedIndex
+  mfI[42] = dF.D21.selectedIndex
+//  if (HasNBCA("2021-2022")) {
+    mfI[43] = dF.D3a.selectedIndex
+    mfI[44] = dF.D4a.selectedIndex
+//  }
+  mfI[45] = dF.T13.value
+  mfI[46] = dF.T14.value
+  mfI[47] = oT13
+  mfI[48] = oT14
+  mfI[49] = dF.T15.value
+  mfI[50] = dF.T16.value
+  mfI[51] = dF.D22.selectedIndex
+  mfI[52] = dF.D15a.selectedIndex
+  mfI[53] = dF.D15b.selectedIndex
+  mfI[54] = dF.T38.value
+  mfI[55] = dF.T39.value
+  mfI[56] = dF.T40.value
+  mfI[57] = dF.T41.value
+  mfI[58] = dF.T34.value
+  mfI[59] = dF.T35.value
+  mfI[60] = dF.T36.value
+  mfI[61] = dF.T37.value
+  mfI[62] = dF.D32.selectedIndex
+  mfI[63] = dF.D33.selectedIndex
+}
+function restorefrmIn() {
+  var mfI,obj
+  mfI=parent.frmInStatus
+//  dF.D1.selectedIndex = mfI[0]
+  obj = dF.D2
+  if (mfI[1] == true) {
+    obj[0].checked = true
+  } else {
+    obj[1].checked = true
+  }
+  dF.D3.selectedIndex = mfI[2]
+  dF.D4.selectedIndex = mfI[3]
+  dF.D5.selectedIndex = mfI[4]
+  dF.D6.selectedIndex = mfI[5]
+  dF.D7.selectedIndex = mfI[6]
+  dF.D8.selectedIndex = mfI[7]
+  dF.D9.selectedIndex = mfI[8]
+  dF.D10.selectedIndex = mfI[9]
+  //dF.D11.selectedIndex = mfI[10]
+  //dF.D12.selectedIndex = mfI[11]
+  //dF.D13.selectedIndex = mfI[12]
+  //dF.D14.selectedIndex = mfI[13]
+  dF.D15.selectedIndex = mfI[14]
+  dF.T1.value = mfI[15]
+  dF.T2.value = mfI[16]
+  dF.T3.value = mfI[17]
+  dF.T4.value = mfI[18]
+  dF.T5.value = mfI[19]
+  dF.T6.value = mfI[20]
+  dF.T7.value = mfI[21]
+  dF.T8.value = mfI[22]
+  dF.T9.value = mfI[23]
+  dF.T10.value = mfI[24]
+  dF.T11.value = mfI[25]
+  dF.T12.value = mfI[26]
+  T3tag = mfI[27]
+  T4tag = mfI[28]
+  T11tag = mfI[29]
+  T12tag = mfI[30]
+  oT1 = mfI[31]
+  oT2 = mfI[32]
+  oT3 = mfI[33]
+  oT4 = mfI[34]
+  oT11 = mfI[35]
+  oT12 = mfI[36]
+  dF.D16.selectedIndex = mfI[37]
+  dF.D17.selectedIndex = mfI[38]
+  dF.D18.selectedIndex = mfI[39]
+  dF.D19.selectedIndex = mfI[40]
+  dF.D20.selectedIndex = mfI[41]
+  dF.D21.selectedIndex = mfI[42]
+//  if (HasNBCA("2021-2022")) {
+    dF.D3a.selectedIndex = mfI[43]
+    dF.D4a.selectedIndex = mfI[44]
+//  }
+  dF.T13.value = mfI[45]
+  dF.T14.value = mfI[46]
+  oT13 = mfI[47]
+  oT14 = mfI[48]
+  dF.T15.value = mfI[49]
+  dF.T16.value = mfI[50]
+  dF.D22.selectedIndex = mfI[51]
+  dF.D15a.selectedIndex = mfI[52]
+  dF.D15b.selectedIndex = mfI[53]
+  dF.T38.value = mfI[54]
+  dF.T39.value = mfI[55]
+  dF.T40.value = mfI[56]
+  dF.T41.value = mfI[57]
+  dF.T34.value = mfI[58]
+  dF.T35.value = mfI[59]
+  dF.T36.value = mfI[60]
+  dF.T37.value = mfI[61]   
+  dF.D32.selectedIndex = mfI[62]
+  dF.D33.selectedIndex = mfI[63]  
+}
+//*************************************************
+//*                                               *
+//*            TAX CALCULATION MODULE             *
+//*                                               *
+//*************************************************
+//'''''''''''''''''''''''''''''''''''''''''''''''''
+//' MODULE SALARIES TAX COMPUTATION               '
+//'                                               '
+//' Creation: 28/11/95                            '
+//' Last revision: 27/05/96                       '
+//' Convert to VBScript: 01/10/97                 '
+//' Convert to JavaScript: 01/03/2001             '
+//'                                               '
+//' ENTRY POINT: FUNCTION STCMain                 '
+//'''''''''''''''''''''''''''''''''''''''''''''''''
+var i
+//' Constant values used in module & in function STCMain as return
+//'Const FAILED = -1
+//'Const SING_TAXPAYER = 10   ' Single tax payer
+//'Const MARR_SELF = 22       ' Married - single income family
+//'Const MARR_SPOUSE = 24     ' Married - single income family
+//'Const MARR_SEPARATE = 30   ' Married - separate taxation
+//'Const MARR_JOINT = 40      ' Married - joint taxation
+//' Maximum number of dependent brothers/sisters & dependent
+//'  parents/grandparents residing/not residing with tax payer
+//'Const MAX_BS = 9
+//'Const MAX_RE = 4
+//'Const MAX_N_RE = 4
+//' Flag for data file open in function GetRate
+//'Const DB_READONLY = &H4
+//' Array used as input for function STCMain
+//' Define the purpose of each array element (by giving named indices)
+//' and set correcponding data types
+//'Dim STCIn(20)
+//' To optimize for speed, separate variables are used instead of an array
+var STCIn0,STCIn1,STCIn2,STCIn3,STCIn4,STCIn5,STCIn6,STCIn7,STCIn8,STCIn9,STCIn10,STCIn11,STCIn12,STCIn13,STCIn14,STCIn15,STCIn16,STCIn17,STCIn18,STCIn19,STCIn20
+var STCIn21,STCIn22,STCIn23,STCIn24,STCIn25
+var slfRebate,spsRebate,JARebate
+//'Const InYearEnd = 0:
+//'Const InMStatus = 1:
+//'Const InSelfI = 2:
+//'Const InSpouseI = 3:
+//'Const InCNo = 4:
+//'Const InDBSNo = 5:
+//'Const InDPReNo = 6:
+//'Const InDPNonReNo = 7:
+//'Const InClaimDDA = 8:
+//'Const InDisSpouse = 9:
+//'Const InDisCNo = 10:
+//'Const InDisDBSNo = 11:
+//'Const InDisDPReNo = 12:
+//'Const InDisDPNonReNo = 13:
+//'Const InSelfD = 14
+//'Const InSpouseD = 15
+//'Const InJointD = 16
+//'Const InSDPReNo = 17
+//'Const InSDPNonReNo = 18
+//'Const InSelfERCEDisNo = 19
+//'Const InSpouseERCEDisNo = 20
+//'STCIn0=0	   	'Integer (Year ended)
+//'STCIn1=" "		'String (Marital status)
+//'STCIn2=0.0	   	'Double (Total income for self)
+//'STCIn3=0.0	     	'Double (Total income for spouse)
+//'STCIn4=0		'Integer (No. of children)
+//'STCIn5=0	   	'Integer (No. of dependent brothers/sisters)
+//'STCIn6=0	   	'Integer (No. of dependent parents/grandparent)
+//'STCIn7=0		'Integer (residing/not residing with tax payer)
+//'STCIn8=false		'Boolean (Claim for disabled dependent allowance?)
+//'STCIn9=false   	'Boolean (Is spouse disabled?)
+//'STCIn10=0	   	'Integer (No. of disabled children)
+//'STCIn11=0		'Integer (No. of disabled dependent brothers/sisters)
+//'STCIn12=0		'Integer (No. of disabled dependent parents/grandparents)
+//'STCIn13=0		'Integer (residing/not residing with tax payer)
+//'STCIn14=0.0		'Double (Total deduction for self)
+//'STCIn15=0.0		'Double (Total deduction for spouse)
+//'STCIn16=0.0		'Double (Total deduction for joint)
+//'STCIn17=0		'Integer (No. of disabled dependent parents/grandparents age between 55 and 60)
+//'STCIn18=0		'Integer (residing/not residing with tax payer)
+//'STCIn19=0		'Integer (No. of Disabled Dependents under ERCE for self)
+//'STCIn20=0		'Integer (No. of Disabled Dependents under ERCE for spouse)
+STCIn21=0		//'Integer (No. of new born children)
+STCIn22=0		//'Integer (No. of disabled new born children)
+//'STCIn23=false   	'Boolean (claim for single parent allowance?)
+//'STCIn24=false		'Boolean (Claim for self Personal disabled?)
+//'STCIn25=false		'Boolean (Claim for spouse Personal disabled?)
+//' Array used as output for function STCMain
+//' Define the purpose of each array element (by giving named indices)
+//' and set correcponding data types
+var STCOutMAX
+STCOutMAX=83
+var STCOut
+//  STCOut=new Array(73)
+STCOut=new Array(STCOutMAX)
+  for (i=0; i<STCOut.length; i++) { STCOut[i]=0 }
+//'Const OutSelfI = 0	:
+//'Const OutSpouseI = 1	:
+//'Const Out_JointI = 2	:
+//'STCOut(0)=0.0		'Double (Self Income)
+//'STCOut(1)=0.0		'Double (Spouse Income)
+//'STCOut(2)=0.0		'Double (Joint Income)
+//'Const OutSingA = 3	:
+//'Const OutMarrA = 4	:
+//'Const OutSPA = 5	:
+//'STCOut(3)=0.0		'Double (Basic allowance for single person)
+//'STCOut(4)=0.0		'Double (Married person's allowance)
+//'STCOut(5)=0.0		'Double (Single parent allowance)
+//'Const OutSelfCA = 6	:
+//'Const OutSelfDBSA = 7	:
+//'Const OutSelfDPA = 8	:
+//'Const OutSelfDPReA = 9	:
+//'Const OutSelfDPNonReA = 10:
+//'Const OutSelfDisDA = 11	:
+//'STCOut(6)=0.0		'Double (Child Allowance)
+//'STCOut(7)=0.0		'Double (Dependent brother/sister allowance)
+//'STCOut(8)=0.0		'Double (Dependent parent/grandparent allowance)
+//'STCOut(9)=0.0		'Double
+//'STCOut(10)=0.0		'Double
+//'STCOut(11)=0.0		'Double (Disabled dependent allowance)
+//'Const OutSpouseCA = 12	:
+//'Const OutSpouseDBSA = 13:
+//'Const OutSpouseDPA = 14	:
+//'Const OutSpouseDPReA = 15:
+//'Const OutSpouseDPNonReA = 16:
+//'Const OutSpouseDisDA = 17:
+//'STCOut(12)=0.0		'Double
+//'STCOut(13)=0.0		'Double
+//'STCOut(14)=0.0		'Double
+//'STCOut(15)=0.0		'Double
+//'STCOut(16)=0.0		'Double
+//'STCOut(17)=0.0		'Double
+//'Const OutJointCA = 18:
+//'Const OutJointDBSA = 19:
+//'Const OutJointDPA = 20:
+//'Const OutJointDPReA = 21:
+//'Const OutJointDPNonReA = 22:
+//'Const OutJointDisDA = 23:
+//'STCOut(18)=0.0		'Double
+//'STCOut(19)=0.0		'Double
+//'STCOut(20)=0.0		'Double
+//'STCOut(21)=0.0		'Double
+//'STCOut(22)=0.0		'Double
+//'STCOut(23)=0.0		'Double
+//'Const OutSelfTotalA = 24:
+//'Const OutSpouseTotalA = 25:
+//'Const OutJointTotalA = 26:
+//'STCOut(24)=0.0		'Double (Total allowances)
+//'STCOut(25)=0.0		'Double
+//'STCOut(26)=0.0		'Double
+//'Const OutSelfNCI = 27:
+//'Const OutSpouseNCI = 28:
+//'Const OutJointNCI = 29:
+//'STCOut(27)=0.0		'Double (Net chargeable income)
+//'STCOut(28)=0.0		'Double
+//'STCOut(29)=0.0		'Double
+//'Const OutSelfTP = 30:
+//'Const OutSpouseTP = 31:
+//'Const OutTotalTP = 32:
+//'Const OutJointTP = 33:
+//'STCOut(30)=0.0		'Double (Tax payable)
+//'STCOut(31)=0.0		'Double
+//'STCOut(32)=0.0		'Double (SelfTP + SpouseTP)
+//'STCOut(33)=0.0		'Double
+//'Const OutSelfStd = 34:
+//'Const OutSpouseStd = 35:
+//'Const OutJointStd = 36:
+//'STCOut(34)=0		'Boolean (Standard rate used?)
+//'STCOut(35)=0		'Boolean
+//'STCOut(36)=0		'Boolean
+//'Const OutSelfCNo = 37:
+//'Const OutSelfDBSNo = 38:
+//'Const OutSelfDPReNo = 39:
+//'Const OutSelfDPNonReNo = 40:
+//'Const OutSpouseCNo = 41:
+//'Const OutSpouseDBSNo = 42:
+//'Const OutSpouseDPReNo = 43:
+//'Const OutSpouseDPNonReNo = 44:
+//'STCOut(37)=0		'Integer (No. of children)
+//'STCOut(38)=0		'Integer (no. of dependent brothers/sisters &)
+//'STCOut(39)=0		'Integer (no. of dependent parents/grandparents)
+//'STCOut(40)=0		'Integer (residing/not residing with tax payer)
+//'STCOut(41)=0		'Integer (to be claimed by self and spouse)
+//'STCOut(42)=0		'Integer ()
+//'STCOut(43)=0		'Integer ()
+//'STCOut(44)=0		'Integer ()
+//'Const OutSelfDisCNo = 45:
+//'Const OutSelfDisDBSNo = 46:
+//'Const OutSelfDisDPReNo = 47:
+//'Const OutSelfDisDPNonReNo = 48:
+//'Const OutSelfDisTotalNo = 49:
+//'Const OutSpouseDisCNo = 50:
+//'Const OutSpouseDisDBSNo  = 51:
+//'Const OutSpouseDisDPReNo = 52:
+//'Const OutSpouseDisDPNonReNo = 53:
+//'Const OutSpouseDisTotalNo = 54:
+//'STCOut(45)=0		'Integer (No. of disabled children,)
+//'STCOut(46)=0		'Integer (no. of disabled dependent brothers/sisters &)
+//'STCOut(47)=0		'Integer (no. of disabled dependent parents/grandparents)
+//'STCOut(48)=0		'Integer (residing/not residing with tax payer)
+//'STCOut(49)=0		'Integer (to be claimed by self and spouse)
+//'STCOut(50)=0		'Integer ()
+//'STCOut(51)=0		'Integer ()
+//'STCOut(52)=0		'Integer ()
+//'STCOut(53)=0		'Integer ()
+//'STCOut(54)=0		'Integer ()
+  //' For debugging purpose only, not used in actual programme;
+  //'  boolean showing if disabled dependent allowance - spouse granted
+  //'Const OutDDASpouse = 55:
+  STCOut[55]=false	//Boolean
+  //' For display purpose only, not used in actual programme;
+  //'  boolean showing if multiple best options are avaliable
+  //'  under separate taxation
+  //'Const OutMultiBestOpt = 56:
+//'  STCOut(56)=0		'Boolean
+//'Const OutSelfD = 57
+//'Const OutSpouseD = 58
+//'Const OutJointD = 59
+//'STCOut(57)=0.0		' Double (Self deduction)
+//'STCOut(58)=0.0		' Double (Spouse deduction)
+//'STCOut(59)=0.0		' Double (Joint deduction)
+//'Const OutSelfSDPA = 60
+//'Const OutSelfSDPReA = 61
+//'Const OutSelfSDPNonReA = 62
+//'STCOut(60)=0.0		' Special Dependent parent/grandparent allowance for self
+//'STCOut(61)=0.0		'         Residing
+//'STCOut(62)=0.0		'         Non-Residing
+//'Const OutSpouseSDPA = 63
+//'Const OutSpouseSDPReA = 64
+//'Const OutSpouseSDPNonReA = 65
+//'STCOut(63)=0.0		' Special Dependent parent/grandparent allowance for spouse
+//'STCOut(64)=0.0		'         Residing
+//'STCOut(65)=0.0		'         Non-Residing
+//'Const OutJointSDPA = 66
+//'Const OutJointSDPReA = 67
+//'Const OutJointSDPNonReA = 68
+//'STCOut(66)=0.0		' Special Dependent parent/grandparent allowance for joint
+//'STCOut(67)=0.0		'         Residing
+//'STCOut(68)=0.0		'         Non-Residing
+//'Const OutSelfSDPReNo = 69
+//'Const OutSelfSDPNonReNo = 70
+//'STCOut(69)=0			' No. of Special Dependent parent/grandparent (Residing)
+//'STCOut(70)=0			' No. of Special Dependent parent/grandparent (Non-Residing)
+//'Const OutSpouseSDPReNo = 71
+//'Const OutSpouseSDPNonReNo = 72
+//'STCOut(71)=0			' No. of Special Dependent parent/grandparent (Residing)
+//'STCOut(72)=0			' No. of Special Dependent parent/grandparent (Non-Residing)
+//'STCOut(73)=0.0		' Double (Child Allowance for new born - self)
+//'STCOut(74)=0.0		' Double (Child Allowance for new born - spouse)
+//'STCOut(75)=0.0		' Double (Child Allowance for new born - joint assessment)
+//'STCOut(76)=0			' Integer (No. of new born children - self)
+//'STCOut(77)=0			' Integer (No. of new born children - spouse)
+//'STCOut(78)=0.0		' Double (self ERCE)
+//'STCOut(79)=0.0		' Double (spouse ERCE)
+// Variables for holding values from Tax_Rate_&_Allowance table
+var AL_SING=0, AAL_SING=0, AL_MARR=0, AAL_MARR=0
+var SPA=0
+var CA, NBCA
+  CA=new Array(10)
+  for (i=0; i<10; i++) { CA[i]=0 }
+  NBCA=new Array(10)
+  for (i=0; i<10; i++) { NBCA[i]=0 }
+var DBSA=0
+var DPA=0, ADPA=0
+var DIS_DA=0
+var SDPGPA=0, SADPGPA=0
+var TAX_RANGE, TAX_RATE, TAX_RATE_R, TAX
+  TAX_RANGE=new Array(16)
+  for (i=0; i<16; i++) { TAX_RANGE[i]=0 }
+  TAX_RATE=new Array(17)
+  for (i=0; i<17; i++) { TAX_RATE[i]=0 }
+  TAX=new Array(16)
+  for (i=0; i<16; i++) { TAX[i]=0 }
+  TAX_RATE_R=0
+var STD_RATE=0
+var CLAWBACK=false
+var CLAW_RATE=0
+var VAPRP_RATE=0
+//'Dim REC_YEAR
+var YrValue, YrEnd
+var LimD_DonaLL,LimD_DonaUL,LimD_Education,LimD_HomeLoan,LimD_Elderly,LimD_MPF,LimD_rate_MPF
+var LimP_rate_VAPRP
+// Variables for short cuts in tax calculation
+var N_TAX_RANGES	// Number of valid tax ranges
+var ACC_RANGE		// Total nci up to each tax range
+  ACC_RANGE=new Array(16)
+  for (i=0; i<16; i++) { ACC_RANGE[i]=0 }
+// Variables for holding modified additional allowance after clawback
+var AASing=0, AAMarr=0
+// Flag showing if taxation using standard rate is chosen
+var StdFlag=false
+//'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+//' PRIVATE PROCEDURE InitSTCOut                                    '
+//'                                                                 '
+//' Initialize Computation Results to zero                          '
+//'                                                                 '
+//'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+function InitSTCOut() {
+  for (i=0; i<STCOut.length; i++) {
+    STCOut[i]=0
+  }
+}
+//'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+//' PUBLIC PROCEDURE CalculateTaxWithDelay                          '
+//'                                                                 '
+//' CHECK VALIDITY OF INCOME FIGURES, SHOW STATUS TEXT              '
+//' AND "SCHEDULE" CalculateTax()                                   '
+//'                                                                 '
+//'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+function CalculateTaxWithDelay() {
+  if (Calculating) return
+  // Allow status text to be shown before calculation starts
+  setTimeout("CalculateTax()",1)
+/*  if (parent.browserID=="IE4Win31") {
+    window.status="請等候 ..."
+  } else {
+*/
+    window.status="正在計算薪俸稅，請等候 ..."
+//  }
+  savefrmIn()
+}
+//'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+//' PUBLIC PROCEDURE CalculateTax                                   '
+//'                                                                 '
+//' FILL INPUT ARRAY (which is script-level) WITH FORM PARAMETERS   '
+//' AND CALL STCMain()                                              '
+//'                                                                 '
+//'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+function CalculateTax() {
+  var obj,slfSEE,spsSEE,v, jntSEE
+  var slfOE, spsOE, jntOE, slfERCE, spsERCE
+  STCIn0=YrValue			//String (Assessment year  e.g. "1996-1997")
+  obj=dF.D2
+  if (obj[0].checked) {
+    STCIn1=obj[0].value			//String (Marital status) - Single
+  } else {
+    STCIn1=obj[1].value			//String (Marital status) - Married
+  }
+//  STCIn2=CDbl(dF.T1.value)		//Double (Total income for self)
+//  STCIn3=CDbl(dF.T2.value)		//Double (Total income for spouse)
+  STCIn2=CDbl(dF.T1.value)+CDbl(dF.T13.value)		//Double (Total income for self)
+  STCIn3=CDbl(dF.T2.value)+CDbl(dF.T14.value)		//Double (Total income for spouse)
+  STCIn4=dF.D3.selectedIndex		//Integer (No. of children)
+  STCIn5=dF.D5.selectedIndex		//Integer (No. of dependent brothers/sisters)
+  //Integer (No. of dependent parents/grandparent - residing)
+  //STCIn6=dF.D7.selectedIndex+dF.D11.selectedIndex
+  STCIn6=dF.D7.selectedIndex
+  //Integer (No. of dependent parents/grandparent - not residing)
+  //STCIn7=dF.D9.selectedIndex+dF.D13.selectedIndex
+  STCIn7=dF.D9.selectedIndex
+  STCIn9=(dF.D15.selectedIndex==1)	//Boolean (Is spouse disabled?)
+  STCIn23=(dF.D22.selectedIndex==1)	//Boolean (Is claim for single parent allowance?)  
+  STCIn24=(dF.D15a.selectedIndex==1)	//Boolean (Is self Personal disabled?)
+  STCIn25=(dF.D15b.selectedIndex==1)	//Boolean (Is spouse Personal disabled?)
+  STCIn10=dF.D4.selectedIndex		//Integer (No. of disabled children)
+  STCIn11=dF.D6.selectedIndex		//Integer (No. of disabled dependent brothers/sisters)
+	slfERCE=CDbl(dF.T9.value)
+	spsERCE=CDbl(dF.T10.value)
+  //Integer (No. of disabled dependent parents/grandparents - residing)
+  //STCIn12=dF.D8.selectedIndex+dF.D12.selectedIndex
+  STCIn12=dF.D8.selectedIndex
+  //Integer (No. of disabled dependent parents/grandparents - not residing)
+  //STCIn13=dF.D10.selectedIndex+dF.D14.selectedIndex
+  STCIn13=dF.D10.selectedIndex
+  // Integer (No. of dependent parents/grandparent aged 55 to 60 - residing)
+  STCIn17=dF.D16.selectedIndex
+  // Integer (No. of dependent parents/grandparent aged 55 to 60 - not residing)
+  STCIn18=dF.D17.selectedIndex
+  // Integer (No. of Disabled Dependents under Self ERCE)
+  STCIn19=NotNIL(dF.T9) ? dF.D20.selectedIndex : 0
+  // Integer (No. of Disabled Dependents under Spouse ERCE)
+  STCIn20=NotNIL(dF.T10) ? dF.D21.selectedIndex : 0
+//  if (HasNBCA("2021-2022")) {
+	  STCIn21=dF.D3a.selectedIndex		//Integer (No. of new born children)
+	  STCIn22=dF.D4a.selectedIndex		//Integer (No. of disabled new born children)
+//  }
+  // Limit Self Outgoings and Expenses
+  slfOE=CDbl(dF.T15.value)
+  if (slfOE>STCIn2) slfOE=STCIn2
+  // Limit Self Education Expenses to Self Income
+  slfSEE=CDbl(dF.T5.value)
+//  if (slfSEE>STCIn2) slfSEE=STCIn2
+  if (slfSEE>(STCIn2-slfOE)) slfSEE=STCIn2-slfOE
+/*
+  //Self Deductions
+  STCIn14=CDbl(dF.T3.value)+CDbl(dF.T9.value)+CDbl(dF.T11.value)+slfSEE+slfOE
+  	//Donation: dF.T3		 ERCE: dF.T9			 MPF: dF.T11
+*/
+// Basic-T refers to '(Self income) after Self Deduction (Ootgoing & Expenses, SEE, ACD, MPF, HLI and ERCE but excluding DDA for ERCE)'
+  //Self Deductions
+//20190222  STCIn14=CDbl(dF.T3.value)+CDbl(dF.T9.value)+CDbl(dF.T11.value)+slfSEE+slfOE+STCOut[80]
+  STCIn14=CDbl(dF.T3.value)+CDbl(dF.T9.value)+CDbl(dF.T11.value)+slfSEE+slfOE+STCOut[80]+CDbl(dF.T34.value)+CDbl(dF.T36.value)+CDbl(dF.T38.value)+CDbl(dF.T40.value)
+  	//Donation: dF.T3		 ERCE: dF.T9			 MPF: dF.T11			PDA : dF.D15a =STCOut[80]
+	if (STCIn2>0) {
+    STCIn14=STCIn14+CDbl(dF.T7.value)
+    if (STCIn3==0 && NotNIL(dF.T8)) {
+      STCIn14=STCIn14+CDbl(dF.T8.value)
+      ErrMsg("由於你配偶沒有入息，現假設你配偶將提名你申請他/她所佔的居所貸款利息，而輸入的居所貸款利息將會從你的入息中扣除。")
+    }
+  }
+  // Limit Spouse Outgoings and Expenses
+  spsOE=CDbl(dF.T16.value)
+  if (spsOE>STCIn3) spsOE=STCIn3
+  // Limit Spouse Education Expenses to Spouse Income
+  spsSEE=CDbl(dF.T6.value)
+//  if (spsSEE>STCIn3) spsSEE=STCIn3
+  if (spsSEE>(STCIn3-spsOE)) spsSEE=STCIn3-spsOE
+/*  //Spouse Deductions
+  STCIn15=CDbl(dF.T4.value)+CDbl(dF.T10.value)+CDbl(dF.T12.value)+spsSEE+spsOE
+*/  
+  //Spouse Deductions
+// 20190222  STCIn15=CDbl(dF.T4.value)+CDbl(dF.T10.value)+CDbl(dF.T12.value)+spsSEE+spsOE+STCOut[81]
+  STCIn15=CDbl(dF.T4.value)+CDbl(dF.T10.value)+CDbl(dF.T12.value)+spsSEE+spsOE+STCOut[81]+CDbl(dF.T35.value)+CDbl(dF.T37.value)+CDbl(dF.T39.value)+CDbl(dF.T41.value)
+  if (STCIn3>0) {
+    STCIn15=STCIn15+CDbl(dF.T8.value)
+    if (STCIn2==0 && NotNIL(dF.T7)) {
+      STCIn15=STCIn15+CDbl(dF.T7.value)
+      ErrMsg("由於你沒有入息，現假設你將提名你配偶申請你所佔的居所貸款利息，而輸入的居所貸款利息將會從你配偶的入息中扣除。")
+    }
+    if (STCIn2==0 && NotNIL(dF.T9)) {
+      STCIn15=STCIn15+CDbl(dF.T9.value)
+      ErrMsg("As you do not have income, it is assumed that you will nominate your spouse to claim your share of Amount paid to residential care home and the Amount paid to residential care home inputted will be deducted from the income of your spouse.")
+    }
+    if (STCIn2==0 && NotNIL(dF.T3)) {
+      STCIn15=STCIn15+CDbl(dF.T3.value)
+      ErrMsg("As you do not have income, it is assumed that you will nominate your spouse to claim your share of Approved Charitable Donations and the Approved Charitable Donations inputted will be deducted from the income of your spouse.")
+    }
+  }
+  //Joint Deductions
+  // Limit Joint Outgoings and Expenses
+// 12/2012 Outgoings and Expenses cannot share to spouse	  
+// jntOE=CDbl(dF.T15.value)+CDbl(dF.T16.value)
+//  if (jntOE>STCIn2+STCIn3) jntOE=STCIn2+STCIn3
+  jntOE=slfOE+spsOE
+  STCIn16=CDbl(T3tag)+CDbl(T4tag)
+  v=Math.floor(LimD_DonaUL*(STCIn2+STCIn3-jntOE)/100)
+  if (v<LimD_DonaLL) v=0
+  if (STCIn16>v) STCIn16=v
+  // Limit Joint Education Expenses to Joint Income  
+  jntSEE=slfSEE+spsSEE
+  if (jntSEE>STCIn2+STCIn3-jntOE) jntSEE=STCIn2+STCIn3-jntOE
+// 20190222  STCIn16=STCIn16+CDbl(dF.T9.value)+CDbl(dF.T11.value)+CDbl(dF.T10.value)+CDbl(dF.T12.value)+jntOE+jntSEE
+  STCIn16=STCIn16+CDbl(dF.T9.value)+CDbl(dF.T11.value)+CDbl(dF.T10.value)+CDbl(dF.T12.value)+jntOE+jntSEE+CDbl(dF.T34.value)+CDbl(dF.T35.value)+CDbl(dF.T36.value)+CDbl(dF.T37.value)+CDbl(dF.T38.value)+CDbl(dF.T39.value)+CDbl(dF.T40.value)+CDbl(dF.T41.value)
+    //ERCE: dF.T9, dF.T10
+    //MPF: dF.T11, dF.T12
+  if (STCIn2>0 || STCIn3>0) {
+  //HLI: dF.T7, dF.T8
+    STCIn16=STCIn16+CDbl(dF.T7.value)+CDbl(dF.T8.value)
+  } else if (NotNIL(dF.T7) || NotNIL(dF.T8)) {
+    if (STCIn1=="S")
+      ErrMsg("由於你沒有入息，因此你不能扣除居所貸款利息。")
+    else
+      ErrMsg("由於你們沒有入息，因此你們不能扣除居所貸款利息。")
+    // abort here
+    v=NotNIL(dF.T7)
+    dF.T7.value="0"
+    dF.T8.value="0"
+    if (v) {
+      dF.T7.focus()
+    } else {
+      dF.T8.focus()
+    }
+    window.status=""
+    return false
+  }
+  //Boolean (Claim for disabled dependent allowance? [Other than DDA under ERCE])
+//  STCIn8=(STCIn9 || STCIn10+STCIn11+STCIn12+STCIn13>0)
+  STCIn8=(STCIn9 || STCIn10+STCIn11+STCIn12+STCIn13+STCIn22>0)
+  STCIn26=(STCIn24 && (STCIn2>0))	//Grant Self Personal Disability Allowance (Has ST income)
+  STCIn27=(STCIn25 && (STCIn3>0)) //Grant Spouse Personal Disability Allowance (Has ST income)
+  InitSTCOut()
+  Restarting=false
+  i=STCMain()
+} // End CalculateTax()
+//'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+//' PRIVATE FUNCTION CalculateRebate
+//'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+function CalculateRebate(tax, YrEnd) {
+  var rebateAmt
+  rebateAmt=0
+  // New generator (12/08/2009)
+  if (true) {
+  	rebateAmt=Math.ceil(tax * 100 / 100)
+  	if (rebateAmt > 10000) {
+  	  rebateAmt = 10000 
+  	}
+  }
+  return rebateAmt
+}
+//'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+//' PRIVATE FUNCTION CompTP                                         '
+//'                                                                 '
+//' INPUT:                                                          '
+//'   double storing TP at standard rate                            '
+//'   double storing NCI value                                      '
+//' OUTPUT:                                                         '
+//'   double storing computed TP value                              '
+//' SIDE EFFECT:                                                    '
+//'   module level flag showing if standard rate is used            '
+//'                                                                 '
+//' THIS FUNCTION IS CALLED BY FUNCTION STCMain                     '
+//'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+function CompTP(StdTP,NCI) {
+  var PrgTP
+  var i
+  if (NCI<=0) {			// Check for zero or negative NCI
+    PrgTP=0
+  } else {			// Compute TP using progressive rates
+    for (i=N_TAX_RANGES; i>0; i--) {
+      if (NCI>ACC_RANGE[i]) break;
+    }
+    PrgTP=TAX[i]+(NCI-ACC_RANGE[i])*TAX_RATE[i+1]/100
+  }
+  // Choose smaller one of TP values
+  // StdFlag indicates if standard rate is used
+  if (Math.floor(StdTP)<Math.floor(PrgTP)) {
+    StdFlag=true
+    return StdTP
+  } else {
+    StdFlag=false
+    return PrgTP
+  }
+}
+//'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+//' PRIVATE FUNCTION GetRate                                      '
+//'                                                               '
+//' INPUT:                                                        '
+//'   integer indicating year of accessment                       '
+//' OUTPUT:                                                       '
+//'   boolean value indicating result of data retrieval           '
+//' SIDE EFFECT:                                                  '
+//'   tax rates & allowances stored in module level variables     '
+//'                                                               '
+//' THIS FUNCTION IS CALLED BY FUNCTION STCMain                   '
+//'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+function GetRate(AssessYear) {
+  var i, ok=false
+  if (AssessYear=="2021-2022") {
+      AL_SING=132000		//PAL_SING
+      AAL_SING=0		//PAAL_SING
+      AL_MARR=264000		//PAL_MARR
+      AAL_MARR=0		//PAAL_MARR
+      SPA=132000			//PSPA
+      //PCHILD_AL1  to  PCHILD_AL9
+      CA[0]=0
+      CA[1]=120000; CA[2]=240000; CA[3]=360000
+      CA[4]=480000; CA[5]=600000; CA[6]=720000
+      CA[7]=840000; CA[8]=960000; CA[9]=1080000
+	  //PCHILDNB_AL1  to PCHILDNB_AL9
+      NBCA[0]=0
+      NBCA[1]=120000; NBCA[2]=240000; NBCA[3]=360000
+      NBCA[4]=480000; NBCA[5]=600000; NBCA[6]=720000
+      NBCA[7]=840000; NBCA[8]=960000; NBCA[9]=1080000
+      DBSA=37500			//PDBSA
+      DPA=50000			//PDPAAMT
+      ADPA=50000			//PADPAAMT
+      DIS_DA=75000			//PDDA
+      SDPGPA=25000		//PSDPGPA
+      SADPGPA=25000		//PSADPGPA
+      VAPRP_RATE=10
+      //PRANGE1  to  PRANGE15
+      TAX_RANGE[0]=0
+      TAX_RANGE[1]=50000; TAX_RANGE[2]=50000
+      TAX_RANGE[3]=50000; TAX_RANGE[4]=50000
+      TAX_RANGE[5]=0; TAX_RANGE[6]=0
+      TAX_RANGE[7]=0; TAX_RANGE[8]=0
+      TAX_RANGE[9]=0; TAX_RANGE[10]=0
+      TAX_RANGE[11]=0; TAX_RANGE[12]=0
+      TAX_RANGE[13]=0; TAX_RANGE[14]=0
+      TAX_RANGE[15]=0
+      //PRATE1  to  PRATE10
+      TAX_RATE[0]=0
+      TAX_RATE[1]=2; TAX_RATE[2]=6
+      TAX_RATE[3]=10; TAX_RATE[4]=14
+      TAX_RATE[5]=0; TAX_RATE[6]=0
+      TAX_RATE[7]=0; TAX_RATE[8]=0
+      TAX_RATE[9]=0; TAX_RATE[10]=0
+      TAX_RATE[11]=0; TAX_RATE[12]=0
+      TAX_RATE[13]=0; TAX_RATE[14]=0
+      TAX_RATE[15]=0
+      TAX_RATE_R=17
+      //PTAX1  to  PTAX10
+      TAX[0]=0
+      TAX[1]=1000; TAX[2]=4000; TAX[3]=9000
+      TAX[4]=16000; TAX[5]=0; TAX[6]=0
+      TAX[7]=0; TAX[8]=0; TAX[9]=0
+      TAX[10]=0; TAX[11]=0; TAX[12]=0
+      TAX[13]=0; TAX[14]=0; TAX[15]=0
+      STD_RATE=15		//PSTANDRATE
+      CLAWBACK=false		//PCLAWBACK
+      CLAW_RATE=0		//PCLAWRATE
+//      REC_YEAR="2122END"		//PYEAREND
+      ok=true
+  }
+  if (!ok) return false
+  // Combine any consecutive Tax Ranges having the same Tax Rate
+  N_TAX_RANGES=1
+  for (i=2; i<16; i++) {
+    if (TAX_RATE[i]==0) break;
+    if (TAX_RATE[i]!=TAX_RATE[N_TAX_RANGES]) {
+      N_TAX_RANGES=N_TAX_RANGES+1
+      TAX_RATE[N_TAX_RANGES]=TAX_RATE[i]
+      TAX_RANGE[N_TAX_RANGES]=TAX_RANGE[i]
+      TAX[N_TAX_RANGES]=TAX[i]
+    } else {
+      TAX_RANGE[N_TAX_RANGES]=TAX_RANGE[N_TAX_RANGES]+TAX_RANGE[i]
+      TAX[N_TAX_RANGES]=TAX[i]
+    }
+  }
+  // Keep a list of total nci up to each tax range
+  ACC_RANGE[1]=TAX_RANGE[1]
+  for (i=2; i<=N_TAX_RANGES; i++) {
+    ACC_RANGE[i]=ACC_RANGE[i-1]+TAX_RANGE[i]
+  }
+  // Tax rate for "Remainder" nci beyond all tax ranges
+  TAX_RATE[N_TAX_RANGES+1]=TAX_RATE_R
+  return true
+}
+function GetYrofAss() {
+YrValue="2021-2022"
+YrofAss=parseInt(rightStr(YrValue,4),10)-1+"/"+rightStr(YrValue,2),10
+return YrofAss
+}
+function GetDeduction() {
+  //YrValue=dF.D1.options[dF.D1.selectedIndex].value
+  YrValue="2021-2022"
+  YrEnd=parseInt(rightStr(YrValue,4),10)
+  parent.LSPYrEnd = YrValue
+  if (YrValue=="2021-2022") {
+    LimD_DonaLL=100
+    LimD_DonaUL=35
+    LimD_Education=100000
+    LimD_HomeLoan=100000
+    LimD_Elderly=100000
+    LimD_MPF=18000
+    LimD_rate_MPF=5
+    LimP_rate_VAPRP=10
+LimD_VHIS=8000
+LimD_VTC=60000
+//        LimD_VHIS=8000
+    return true
+  }
+  return false
+}
+//'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+//' FUNCTION STCMain                                              '
+//'                                                               '
+//' INPUT:                                                        '
+//'   global array storing user screen inputs                     '
+//'   global array for storing computed values for screen display '
+//' OUTPUT:                                                       '
+//'   array with computed values for screen display               '
+//' RETURN VALUE:                                                 '
+//'   flag showing which screen should be displayed               '
+//'                                                               '
+//' THIS FUNCTION ACCEPTS USER'S INFORMATION FROM SCREEN INPUTS,  '
+//' COMPUTES VARIOUS METHODS OF TAX CLAIMING COMBINATION, AND     '
+//' RETURNS THE BEST CHOICE OF TAX CLAMATION FOR SCREEN OUTPUT.   '
+//'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+// "Static" variables used by this function
+// STCMain uses static variables so that it is "restartable"
+  var Calculating,Restarting
+  // For saving calculation result during restart
+  var SavPar0,SavPar1,SavPar2,SavPar3,SavPar4,SavPar5,SavPar6,SavPar7,SavPar8,SavPar9
+  var SavPar10,SavPar11,SavPar12,SavPar13,SavPar14,SavPar15,SavPar16,SavPar17,SavPar18
+  var SavPar19,SavPar20,SavPar21,SavPar22,SavPar23,SavPar24,SavPar25,SavPar26,SavPar27
+  var SavPar28,SavPar29,SavPar30,SavPar31,SavPar32,SavPar33,SavPar34,SavPar35,SavPar36
+  var SavPar37,SavPar38,SavPar39,SavPar40,SavPar41
+  // Indices for restarting a suspended looping
+  var oChCount,oSTCIn5,oSTCIn7,oSTCIn6,oSTCIn11,oSTCIn13,oSTCIn12
+  var oSTCIn18,oSTCIn17
+  // Loop counter for displaying percentage completed
+  var nol_Loops,nol_LoopCnt
+  // STCMain's return value
+  var STCMainRV
+function STCMain() {
+  var netSelfI,netSpouseI,netJointI
+  var slfNCI,spsNCI,slfTP,spsTP,slfStd,spsStd,slfStdTP,spsStdTP,jointStdTP
+  var spsDDA,slfPDA,spsPDA
+  var ChCount
+  var DPNo,ADPNo
+  var SDPNo,SADPNo
+  var n,o,l,m
+  var nMin,oMin,lMin,mMin
+  var nMin1,oMin1,lMin1,mMin1
+  var od,ld,md
+  var odMin,ldMin,mdMin
+  var odMin1,ldMin1,mdMin1
+  var MinTP,MinTP1,CurTP,CurJntTP,MinJntTP,MinJntTP1
+  var slfMinStd,spsMinStd,slfMinNCI
+  var slfMinStd1,spsMinStd1,slfMinNCI1
+  var p,q
+  var pMin,qMin
+  var pMin1,qMin1
+//  var MultiOpt=0
+  var DDAspsGranted
+  // Intermediate variables used in optimization of nested loops
+  var TotalDIS_DA,slfDisC_No,slfDIS_DA,slfNCItmp,spsNCItmp
+  // These variables must be initialize on each restart
+  var ChCount_,STCIn5_,STCIn7_,STCIn6_,STCIn11_,STCIn13_,STCIn12_
+  var STCIn18_,STCIn17_
+  var jntNCIDDAsps=0, jntTPDDAsps=0
+  // Count of execution of the inner most loop
+  var InLoopCnt
+  // Number of executions of inner most loop to trigger restarting
+  var InLoopLim
+/*  if (parent.browserID=="IE4Win31") {
+    InLoopLim=65
+  } else {*/
+    InLoopLim=20000
+//  }
+  if (!Restarting) {
+    Calculating=true
+    if (GetRate(STCIn0)==false) {
+      return -1
+    }
+    //'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    //' CALCULATE NET INCOMES AFTER DEDUCTIONS  AND  SET OUTPUT DEDUCTIONS    '
+    //'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    netSelfI=STCIn2-STCIn14
+    if (netSelfI<0) netSelfI=0
+    netSpouseI=STCIn3-STCIn15
+    if (netSpouseI<0) netSpouseI=0
+    netJointI=STCIn2+STCIn3-STCIn16
+    if (netJointI<0) netJointI=0
+    STCOut[57]=STCIn14
+    STCOut[58]=STCIn15
+    STCOut[59]=STCIn16
+    STCOut[78]=CDbl(dF.T9.value)
+    STCOut[79]=CDbl(dF.T10.value)
+//    	slfERCE=CDbl(dF.T9.value)
+//	spsERCE=CDbl(dF.T10.value)
+    //''''''''''''''''''''''''''''''''''''''''''''''''''''
+    //' PRE-CALCULATE STANDARD TAX PAYABLE FOR ALL CASES '
+    //''''''''''''''''''''''''''''''''''''''''''''''''''''
+    slfStdTP=netSelfI*STD_RATE/100		//self TP at standard rate
+    spsStdTP=netSpouseI*STD_RATE/100		//spouse TP at standard rate
+    jointStdTP=netJointI*STD_RATE/100		//joint TP at standard rate
+    //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    //' COMPUTE ADDITIONAL ALLOWANCE AASing/AAMarr WITH CLAWBACK '
+    //' TAKEN INTO ACCOUNT, ENSURING NON-NEGATIVE VALUES         '
+    //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    if (CLAWBACK) {
+      AASing=AAL_SING-(netSelfI-AL_SING-AAL_SING)*CLAW_RATE/100
+      if (AASing<0) AASing=0
+      AAMarr=AAL_MARR-(netSelfI+netSpouseI-AL_MARR-AAL_MARR)*CLAW_RATE/100
+      if (AAMarr<0) AAMarr=0
+    } else { // CLAWBACK == false
+      AASing=AAL_SING
+      AAMarr=AAL_MARR
+    }
+    //'''''''''''''''''''''''''''''''''''''''''''''''
+    //' MAIN PROGRAMME FOR SALARIES TAX COMPUTATION '
+    //'''''''''''''''''''''''''''''''''''''''''''''''
+    //' Compute number of (additional) dependent parent(s)/grandparent(s)
+    ADPNo=STCIn6
+    DPNo=STCIn6+STCIn7
+    // No. of special (additional) dependent parent(s)/grandparent(s) [aged between 55 and 60]
+    SADPNo=STCIn17
+    SDPNo=STCIn17+STCIn18
+  } // End if (!Restarting)
+  //'''''''''''''''''''''''''''''''''''''''''''''
+  //' Compute salaries tax for single taxplayer '
+  //'''''''''''''''''''''''''''''''''''''''''''''
+  if (STCIn1=="S") {
+    STCOut[0]=STCIn2
+    STCOut[3]=AL_SING+AASing
+//    if (STCIn4+STCIn21>0) {
+    if ((STCIn4+STCIn21>0) && (STCIn23==true) ) {
+      STCOut[5]=SPA
+    } else { // STCIn4+STCIn21 == 0
+      STCOut[5]=0
+    }
+    STCOut[6]=CA[STCIn4]
+    STCOut[7]=DBSA*STCIn5
+    STCOut[9]=(DPA+ADPA)*STCIn6
+    STCOut[10]=DPA*STCIn7
+    STCOut[8]=STCOut[9]+STCOut[10]
+    STCOut[61]=(SDPGPA+SADPGPA)*STCIn17
+    STCOut[62]=SDPGPA*STCIn18
+    STCOut[60]=STCOut[61]+STCOut[62]
+	STCOut[73]=CA[STCIn21]+NBCA[STCIn21]
+    if (STCIn8==true) {
+//      STCOut[11]=DIS_DA*(STCIn10+STCIn11+STCIn12+STCIn13+STCIn19)
+      STCOut[11]=DIS_DA*(STCIn10+STCIn11+STCIn12+STCIn13+STCIn19+STCIn22)
+    } else {
+      STCOut[11]=DIS_DA*STCIn19
+    }
+    if (STCIn26==true) { //Slf
+      STCOut[80]=DIS_DA
+	} else {
+      STCOut[80]=0	
+    }	
+//    STCOut[24]=STCOut[3]+STCOut[5]+STCOut[6]+STCOut[7]+STCOut[8]+STCOut[60]+STCOut[11]+STCOut[73]
+    STCOut[24]=STCOut[3]+STCOut[5]+STCOut[6]+STCOut[7]+STCOut[8]+STCOut[60]+STCOut[11]+STCOut[73]+STCOut[80]
+    STCOut[27]=netSelfI-STCOut[24]
+    if (STCOut[27]<0) STCOut[27]=0
+    STCOut[30]=Math.floor(CompTP(slfStdTP,STCOut[27]))
+    STCOut[34]=StdFlag
+    STCOut[32]=STCOut[30]
+    STCOut[37]=STCIn4
+    STCOut[38]=STCIn5
+    STCOut[39]=STCIn6
+    STCOut[40]=STCIn7
+    STCOut[69]=STCIn17
+    STCOut[70]=STCIn18
+	STCOut[76]=STCIn21
+    if (STCIn8==true) {
+//      STCOut[45]=STCIn10
+      STCOut[45]=STCIn10+STCIn22
+      STCOut[46]=STCIn11
+      STCOut[47]=STCIn12
+      STCOut[48]=STCIn13
+      STCOut[49]=STCOut[45]+STCOut[46]+STCOut[47]+STCOut[48]+STCIn19
+    } else {
+      STCOut[49]=STCIn19
+    }
+    // Set return flag
+    STCMainRV=10
+  //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  //' Compute salaries tax for married tax payer - single self income family '
+  //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  } else if ((STCIn1=="M") && (STCIn3==0)) { // self has income; spouse income=0
+    STCOut[0]=STCIn2
+    STCOut[4]=AL_MARR+AAMarr
+    STCOut[6]=CA[STCIn4]
+    STCOut[7]=DBSA*STCIn5
+    STCOut[9]=(DPA+ADPA)*STCIn6
+    STCOut[10]=DPA*STCIn7
+    STCOut[8]=STCOut[9]+STCOut[10]
+    STCOut[61]=(SDPGPA+SADPGPA)*STCIn17
+    STCOut[62]=SDPGPA*STCIn18
+    STCOut[60]=STCOut[61]+STCOut[62]
+	STCOut[73]=CA[STCIn21]+NBCA[STCIn21]
+    if (dF.D15a.selectedIndex=="1") {
+      slfPDA=DIS_DA
+	} else {
+      slfPDA=0
+	}
+	slfNCI=0
+//        slfNCI=netSelfI-AL_SING
+	slfNCI=netSelfI-(STCOut[4]+STCOut[6]+STCOut[7]+STCOut[8]+STCOut[60]+STCOut[73])
+    if (STCIn8==true) {
+      // Grant DDA-spouse?
+//      if ( (STCIn9==true) && ((STCIn2-AL_SING-STCOut[57])>0)  ) {
+		if ( (STCIn9==true) && ((STCIn2-AL_SING-STCOut[57])>0)  ) {
+			if ( (dF.D15a.selectedIndex==0) || ((dF.D15a.selectedIndex==1) && ((STCIn2-AL_SING-STCOut[57]-DIS_DA)>0))  ) {
+		        STCOut[11]=DIS_DA*(1+STCIn10+STCIn11+STCIn12+STCIn13+STCIn19+STCIn22)
+		        STCOut[55]=true
+			} else {
+		        STCOut[11]=DIS_DA*(STCIn10+STCIn11+STCIn12+STCIn13+STCIn19+STCIn22)
+			}
+		} else {
+			STCOut[11]=DIS_DA*(STCIn10+STCIn11+STCIn12+STCIn13+STCIn19+STCIn22)
+      }
+    } else { // STCIn8 == false
+      STCOut[11]=DIS_DA*STCIn19
+    }
+    if (STCIn26==true) { //Slf
+      STCOut[80]=DIS_DA
+	} else {
+      STCOut[80]=0	
+    }	
+//    STCOut[24]=STCOut[4]+STCOut[6]+STCOut[7]+STCOut[8]+STCOut[60]+STCOut[11]+STCOut[73]
+    STCOut[24]=STCOut[4]+STCOut[6]+STCOut[7]+STCOut[8]+STCOut[60]+STCOut[11]+STCOut[73]+STCOut[80]
+    STCOut[27]=netSelfI-STCOut[24]
+    if (STCOut[27]<0) STCOut[27]=0
+    STCOut[30]=Math.floor(CompTP(slfStdTP,STCOut[27]))
+    STCOut[34]=StdFlag
+    STCOut[32]=STCOut[30]
+    STCOut[37]=STCIn4
+    STCOut[38]=STCIn5
+    STCOut[39]=STCIn6
+    STCOut[40]=STCIn7
+    STCOut[69]=STCIn17
+    STCOut[70]=STCIn18
+    STCOut[76]=STCIn21
+    if (STCIn8==true) {
+//      STCOut[45]=STCIn10
+      STCOut[45]=STCIn10+STCIn22
+      STCOut[46]=STCIn11
+      STCOut[47]=STCIn12
+      STCOut[48]=STCIn13
+      STCOut[49]=STCOut[45]+STCOut[46]+STCOut[47]+STCOut[48]+STCIn19
+    } else {
+      STCOut[49]=STCIn19
+    }
+    // Set return flag
+    STCMainRV=22
+  //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  //' Compute salaries tax for married tax payer - single spouse income family '
+  //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  } else if ((STCIn1=="M") && (STCIn2==0)) { // self income=0; spouse has income
+    STCOut[1]=STCIn3
+    STCOut[4]=AL_MARR+AAMarr
+    STCOut[12]=CA[STCIn4]
+    STCOut[13]=DBSA*STCIn5
+    STCOut[15]=(DPA+ADPA)*STCIn6
+    STCOut[16]=DPA*STCIn7
+    STCOut[14]=STCOut[15]+STCOut[16]
+    STCOut[64]=(SDPGPA+SADPGPA)*STCIn17
+    STCOut[65]=SDPGPA*STCIn18
+    STCOut[63]=STCOut[64]+STCOut[65]
+	STCOut[74]=CA[STCIn21]+NBCA[STCIn21]
+    if (STCIn8==true) {
+//      STCOut[17]=DIS_DA*(STCIn10+STCIn11+STCIn12+STCIn13+STCIn20)
+      STCOut[17]=DIS_DA*(STCIn10+STCIn11+STCIn12+STCIn13+STCIn20+STCIn22)
+    } else {
+      STCOut[17]=DIS_DA*STCIn20
+    }
+    if (STCIn27==true) { //Sps
+      STCOut[81]=DIS_DA
+	} else {
+      STCOut[81]=0	
+    }
+//    STCOut[25]=STCOut[4]+STCOut[12]+STCOut[13]+STCOut[14]+STCOut[63]+STCOut[17]+STCOut[74]
+    STCOut[25]=STCOut[4]+STCOut[12]+STCOut[13]+STCOut[14]+STCOut[63]+STCOut[17]+STCOut[74]+STCOut[81]
+    STCOut[28]=netSpouseI-STCOut[25]
+    if (STCOut[28]<0) STCOut[28]=0
+    STCOut[31]=Math.floor(CompTP(spsStdTP,STCOut[28]))
+    STCOut[35]=StdFlag
+    STCOut[32]=STCOut[31]
+    STCOut[41]=STCIn4
+    STCOut[42]=STCIn5
+    STCOut[43]=STCIn6
+    STCOut[44]=STCIn7
+    STCOut[71]=STCIn17
+    STCOut[72]=STCIn18
+    STCOut[77]=STCIn21
+    if (STCIn8==true) {
+//      STCOut[50]=STCIn10
+      STCOut[50]=STCIn10+STCIn22
+      STCOut[51]=STCIn11
+      STCOut[52]=STCIn12
+      STCOut[53]=STCIn13
+      STCOut[54]=STCOut[50]+STCOut[51]+STCOut[52]+STCOut[53]+STCIn20
+    } else {
+      STCOut[54]=STCIn20
+    }
+    // Set return flag
+    STCMainRV=24
+  //''''''''''''''''''''''''''''''''''''''''''''''
+  //' Compute salaries tax for married tax payer '
+  //''''''''''''''''''''''''''''''''''''''''''''''
+  } else { // STCIn1 == "M"
+    if (!Restarting) {
+      // Initialise variables
+//      if (STCIn4>0) {
+      if (STCIn4+STCIn21>0) {
+        ChCount=1
+      } else { // STCIn4+STCIn21 == 0
+        ChCount=0
+      }
+      // Clear NCI, TP & standard rate flag
+      slfNCI=0; slfMinNCI=0
+      spsNCI=0
+      slfTP=0
+      spsTP=0
+      slfStd=false
+      spsStd=false
+      spsDDA=false
+      MinTP=netSelfI+netSpouseI; if (MinTP==0) MinTP=1
+      MinTP1=netSelfI+netSpouseI; if (MinTP1==0) MinTP1=1
+      MinJntTP=netSelfI+netSpouseI; if (MinJntTP==0) MinJntTP=1
+			MinJntTP1=netSelfI+netSpouseI; if (MinJntTP1==0) MinJntTP1=1
+//     MultiOpt=false
+      DDAspsGranted=false
+//      TotalDIS_DA=DIS_DA*(STCIn10+STCIn11+STCIn12+STCIn13)	// Total DDA available (other than DDA under ERCE)
+      TotalDIS_DA=DIS_DA*(STCIn10+STCIn11+STCIn12+STCIn13+STCIn22)	// Total DDA available (other than DDA under ERCE)
+      // Clear indices
+      nMin=0; oMin=0; lMin=0; mMin=0
+      odMin=0; ldMin=0; mdMin=0
+      pMin=0; qMin=0
+      nMin1=0; oMin1=0; lMin1=0; mMin1=0
+      odMin1=0; ldMin1=0; mdMin1=0
+      pMin1=0; qMin1=0
+      // Set starting indices of loops
+      ChCount_=ChCount; STCIn5_=STCIn5; STCIn7_=STCIn7; STCIn6_=STCIn6
+      STCIn11_=STCIn11; STCIn13_=STCIn13; STCIn12_=STCIn12
+      STCIn18_=STCIn18; STCIn17_=STCIn17
+      // Total number of loopings counting from the first 3 levels
+      nol_Loops=(STCIn18+1)*(STCIn17+1)*(ChCount+1)*(STCIn5+1)*(STCIn7+1)
+      nol_LoopCnt=0
+    } else {	// Restarting a suspended calculation
+      // Restore previous calculation result
+      ChCount=SavPar0
+      DPNo=SavPar1
+      ADPNo=SavPar2
+      nMin=SavPar3
+      oMin=SavPar4
+      lMin=SavPar5
+      mMin=SavPar6
+      nMin1=SavPar7
+      oMin1=SavPar8
+      lMin1=SavPar9
+      mMin1=SavPar10
+      odMin=SavPar11
+      ldMin=SavPar12
+      mdMin=SavPar13
+      odMin1=SavPar14
+      ldMin1=SavPar15
+      mdMin1=SavPar16
+      MinTP=SavPar17
+      MinTP1=SavPar18
+      slfMinStd=SavPar19
+      spsMinStd=SavPar20
+      slfMinNCI=SavPar21
+      slfMinStd1=SavPar22
+      spsMinStd1=SavPar23
+      slfMinNCI1=SavPar24
+//      MultiOpt=SavPar25
+      DDAspsGranted=SavPar26
+      TotalDIS_DA=SavPar27
+      slfStdTP=SavPar28
+      spsStdTP=SavPar29
+      jointStdTP=SavPar30
+      netSelfI=SavPar31
+      netSpouseI=SavPar32
+      netJointI=SavPar33
+      SDPNo=SavPar34
+      SADPNo=SavPar35
+      pMin=SavPar36
+      qMin=SavPar37
+      pMin1=SavPar38
+      qMin1=SavPar39
+			MinJntTP=SavPar40
+			MinJntTP1=SavPar41
+      // Set starting indices of loops (for restarting)
+      ChCount_=oChCount; STCIn5_=oSTCIn5; STCIn7_=oSTCIn7; STCIn6_=oSTCIn6
+      STCIn11_=oSTCIn11; STCIn13_=oSTCIn13; STCIn12_=oSTCIn12
+      STCIn18_=oSTCIn18; STCIn17_=oSTCIn17
+    }
+    InLoopCnt=0
+	if (STCIn26==true) { //Slf
+      STCOut[80]=DIS_DA
+	} else {
+      STCOut[80]=0	
+    }
+	if (STCIn27==true) { //Sps
+      STCOut[81]=DIS_DA
+	} else {
+      STCOut[81]=0	
+    }
+    // Disabled dependent allowance claimed? (other than DDA under ERCE)
+    if (STCIn8==true) {
+      for (p=STCIn18_; p>=0; p--) {
+      for (q=STCIn17_; q>=0; q--) {
+      for (n=ChCount_; n>=0; n--) {
+        slfDisC_No=n*(STCIn10+STCIn22)
+      for (o=STCIn5_; o>=0; o--) {
+      for (l=STCIn7_; l>=0; l--) {
+      for (m=STCIn6_; m>=0; m--) {
+//        slfNCItmp=netSelfI-AL_SING-AASing-CA[n*STCIn4]-DBSA*o-DPA*(l+m)-ADPA*m
+//                  -SDPGPA*(p+q)-SADPGPA*q - DIS_DA*STCIn19
+//        spsNCItmp=netSpouseI-AL_SING-AASing-CA[(1-n)*STCIn4]-DBSA*(STCIn5-o)-DPA*(DPNo-(l+m))-ADPA*(ADPNo-m)-TotalDIS_DA
+//                  -SDPGPA*(SDPNo-(p+q))-SADPGPA*(SADPNo-q) - DIS_DA*STCIn20
+/* 27/02/2017 Also deduct Personal Disability ALLOWANCE
+        slfNCItmp=netSelfI-AL_SING-AASing-CA[n*STCIn4]-DBSA*o-DPA*(l+m)-ADPA*m
+                  -SDPGPA*(p+q)-SADPGPA*q - DIS_DA*STCIn19-(CA[n*STCIn21]+NBCA[n*STCIn21])
+        spsNCItmp=netSpouseI-AL_SING-AASing-CA[(1-n)*STCIn4]-DBSA*(STCIn5-o)-DPA*(DPNo-(l+m))-ADPA*(ADPNo-m)-TotalDIS_DA
+                  -SDPGPA*(SDPNo-(p+q))-SADPGPA*(SADPNo-q) - DIS_DA*STCIn20-(CA[(1-n)*STCIn21]+NBCA[(1-n)*STCIn21])
+*/
+        slfNCItmp=netSelfI-AL_SING-STCOut[80]-AASing-CA[n*STCIn4]-DBSA*o-DPA*(l+m)-ADPA*m
+                  -SDPGPA*(p+q)-SADPGPA*q - DIS_DA*STCIn19-(CA[n*STCIn21]+NBCA[n*STCIn21])
+        spsNCItmp=netSpouseI-AL_SING-STCOut[81]-AASing-CA[(1-n)*STCIn4]-DBSA*(STCIn5-o)-DPA*(DPNo-(l+m))-ADPA*(ADPNo-m)-TotalDIS_DA
+                  -SDPGPA*(SDPNo-(p+q))-SADPGPA*(SADPNo-q) - DIS_DA*STCIn20-(CA[(1-n)*STCIn21]+NBCA[(1-n)*STCIn21])
+	  for (od=STCIn11_; od>=0; od--) {
+        if ((od<=o) && ((STCIn11-od)<=(STCIn5-o))) {
+      for (ld=STCIn13_; ld>=0; ld--) {
+        if ((ld<=l) && ((STCIn13-ld)<=(STCIn7-l))) {
+      for (md=STCIn12_; md>=0; md--) {
+        if ((md<=m) && ((STCIn12-md)<=(STCIn6-m))) {
+          // Compute self/spouse NCIs & remember if DDA-spouse is granted
+          slfDIS_DA=DIS_DA*(slfDisC_No+od+ld+md)
+          slfNCI=slfNCItmp-slfDIS_DA
+          spsNCI=spsNCItmp+slfDIS_DA
+          spsDDA=((STCIn9==true) && (slfNCI>0) && (spsNCI<=0))
+		  slfPDA=STCIn26
+		  spsPDA=STCIn27
+          // Compute self/spouse TPs & remember if standard rate is used
+          // To optimize for speed, the TP values are calculated "inline" instead of calling compTP()
+          if (slfNCI>0) {
+            for (i=N_TAX_RANGES; i>=1; i--) {
+              if (slfNCI>ACC_RANGE[i]) break;
+            }
+            slfTP=TAX[i]+(slfNCI-ACC_RANGE[i])*TAX_RATE[i+1]/100
+          } else {
+            slfNCI=0
+            slfTP=0
+          }
+          if (Math.floor(slfStdTP)<Math.floor(slfTP)) {
+            slfStd=true; slfTP=slfStdTP
+          } else {
+            slfStd=false
+          }
+          if (spsNCI>0) {
+            for (i=N_TAX_RANGES; i>=1; i--) {
+              if (spsNCI>ACC_RANGE[i]) break;
+            }
+            spsTP=TAX[i]+(spsNCI-ACC_RANGE[i])*TAX_RATE[i+1]/100
+          } else {
+            spsNCI=0
+            spsTP=0
+          }
+          if (Math.floor(spsStdTP)<Math.floor(spsTP)) {
+            spsStd=true; spsTP=spsStdTP
+          } else {
+            spsStd=false
+          }
+//        CurTP=slfTP+spsTP
+//         CurTP=slfTP+spsTP-CalculateRebate(slfTP, YrEnd)-CalculateRebate(spsTP, YrEnd)
+         // Check if multiple best options are available
+         // if (CurTP==MinTP) {
+         //   MultiOpt=true
+         // } else if (CurTP<MinTP) {
+         //   MultiOpt=false
+         // }
+          // Maintain minimum TP & corresponding array indice for all cases
+//					20090601
+//          if ((CurTP<MinTP) || ((CurTP==MinTP) && (slfNCI<slfMinNCI))) {
+//						if ((CurTP<MinTP) || ((CurTP==MinTP) && ((slfNCI<slfMinNCI) || (slfNCI==0)))) {          
+				CurTP=Math.floor(slfTP+spsTP-CalculateRebate(slfTP, YrEnd)-CalculateRebate(spsTP, YrEnd)); if (CurTP<0) CurTP=0
+				CurJntTP=Math.floor(slfTP+spsTP); if (CurJntTP<0) CurJntTP=0
+//alert("1. p="+p+"  q="+q+"  n="+n+"  o="+o+"  l="+l+"  m="+m)
+//alert("CurTP="+CurTP+"   slfTP="+slfTP+"   spsTP="+spsTP+"   CurJntTP="+CurJntTP+"   MinJntTP="+MinJntTP)
+//if ((CurTP<MinTP) || ((CurTP==MinTP) && ((slfNCI<slfMinNCI) || (slfNCI==0)))) {
+         if ((CurTP<MinTP) || ((CurTP==MinTP) && (CurJntTP<MinJntTP)) || ((CurTP==MinTP) && (CurJntTP==MinJntTP) && (slfNCI<slfMinNCI))) {
+         		MinTP=CurTP
+         		MinJntTP=CurJntTP
+            slfMinStd=slfStd
+            spsMinStd=spsStd
+            slfMinNCI=slfNCI
+            nMin=n; oMin=o; lMin=l; mMin=m
+            odMin=od; ldMin=ld; mdMin=md
+            pMin=p; qMin=q
+          }
+//          if (spsDDA) {
+          if (spsDDA || slfPDA || spsPDA ) {
+            if (spsDDA) DDAspsGranted=true
+            DDAspsGranted=true
+            // Maintain minimum TP & corresponding array indice for cases where DDAsps Granted
+//						20090601
+//            if ((CurTP<MinTP1) || ((CurTP==MinTP1) && (slfNCI<slfMinNCI1))) {
+//							if ((CurTP<MinTP1) || ((CurTP==MinTP1) && ((slfNCI<slfMinNCI1) || (slfNCI==0)))) {
+						if ((CurTP<MinTP1) || ((CurTP==MinTP1) && (CurJntTP<MinJntTP1)) || ((CurTP==MinTP1) && (CurJntTP==MinJntTP1) && (slfNCI<slfMinNCI1))) {
+							MinTP1=CurTP
+							MinJntTP1=CurJntTP
+              slfMinStd1=slfStd
+              spsMinStd1=spsStd
+              slfMinNCI1=slfNCI
+              nMin1=n; oMin1=o; lMin1=l; mMin1=m
+              odMin1=od; ldMin1=ld; mdMin1=md
+              pMin1=p; qMin1=q
+            }
+          }
+          //*******************************************************
+          // Do a restarting, so as to display processing status  *
+          //*******************************************************
+          InLoopCnt=InLoopCnt+1
+          // Check if it is time to restart
+          if (InLoopCnt>=InLoopLim) {
+            // First, save calculation result up to now
+            SavPar0=ChCount
+            SavPar1=DPNo
+            SavPar2=ADPNo
+            SavPar3=nMin
+            SavPar4=oMin
+            SavPar5=lMin
+            SavPar6=mMin
+            SavPar7=nMin1
+            SavPar8=oMin1
+            SavPar9=lMin1
+            SavPar10=mMin1
+            SavPar11=odMin
+            SavPar12=ldMin
+            SavPar13=mdMin
+            SavPar14=odMin1
+            SavPar15=ldMin1
+            SavPar16=mdMin1
+            SavPar17=MinTP
+            SavPar18=MinTP1
+            SavPar19=slfMinStd
+            SavPar20=spsMinStd
+            SavPar21=slfMinNCI
+            SavPar22=slfMinStd1
+            SavPar23=spsMinStd1
+            SavPar24=slfMinNCI1
+//            SavPar25=MultiOpt
+            SavPar26=DDAspsGranted
+            SavPar27=TotalDIS_DA
+            SavPar28=slfStdTP
+            SavPar29=spsStdTP
+            SavPar30=jointStdTP
+            SavPar31=netSelfI
+            SavPar32=netSpouseI
+            SavPar33=netJointI
+            SavPar34=SDPNo
+            SavPar35=SADPNo
+            SavPar36=pMin
+            SavPar37=qMin
+            SavPar38=pMin1
+            SavPar39=qMin1
+            SavPar40=MinJntTP
+            SavPar41=MinJntTP1
+            // Set indices to be use on restart
+            if (md>0) {
+              oSTCIn12=md-1
+              oSTCIn13=ld
+              oSTCIn11=od
+              oSTCIn6=m
+              oSTCIn7=l
+              oSTCIn5=o
+              oChCount=n
+              oSTCIn17=q
+              oSTCIn18=p
+            } else if (ld>0) {
+              oSTCIn12=STCIn12
+              oSTCIn13=ld-1
+              oSTCIn11=od
+              oSTCIn6=m
+              oSTCIn7=l
+              oSTCIn5=o
+              oChCount=n
+              oSTCIn17=q
+              oSTCIn18=p
+            } else if (od>0) {
+              oSTCIn12=STCIn12
+              oSTCIn13=STCIn13
+              oSTCIn11=od-1
+              oSTCIn6=m
+              oSTCIn7=l
+              oSTCIn5=o
+              oChCount=n
+              oSTCIn17=q
+              oSTCIn18=p
+            } else if (m>0) {
+              oSTCIn12=STCIn12
+              oSTCIn13=STCIn13
+              oSTCIn11=STCIn11
+              oSTCIn6=m-1
+              oSTCIn7=l
+              oSTCIn5=o
+              oChCount=n
+              oSTCIn17=q
+              oSTCIn18=p
+            } else if (l>0) {
+              oSTCIn12=STCIn12
+              oSTCIn13=STCIn13
+              oSTCIn11=STCIn11
+              oSTCIn6=STCIn6
+              oSTCIn7=l-1; nol_LoopCnt=nol_LoopCnt+1
+              oSTCIn5=o
+              oChCount=n
+              oSTCIn17=q
+              oSTCIn18=p
+            } else if (o>0) {
+              oSTCIn12=STCIn12
+              oSTCIn13=STCIn13
+              oSTCIn11=STCIn11
+              oSTCIn6=STCIn6
+              oSTCIn7=STCIn7; nol_LoopCnt=nol_LoopCnt+1
+              oSTCIn5=o-1
+              oChCount=n
+              oSTCIn17=q
+              oSTCIn18=p
+            } else if (n>0) {
+              oSTCIn12=STCIn12
+              oSTCIn13=STCIn13
+              oSTCIn11=STCIn11
+              oSTCIn6=STCIn6
+              oSTCIn7=STCIn7; nol_LoopCnt=nol_LoopCnt+1
+              oSTCIn5=STCIn5
+              oChCount=n-1
+              oSTCIn17=q
+              oSTCIn18=p
+            } else if (q>0) {
+              oSTCIn12=STCIn12
+              oSTCIn13=STCIn13
+              oSTCIn11=STCIn11
+              oSTCIn6=STCIn6
+              oSTCIn7=STCIn7; nol_LoopCnt=nol_LoopCnt+1
+              oSTCIn5=STCIn5
+              oChCount=ChCount
+              oSTCIn17=q-1
+              oSTCIn18=p
+            } else {
+              oSTCIn12=STCIn12
+              oSTCIn13=STCIn13
+              oSTCIn11=STCIn11
+              oSTCIn6=STCIn6
+              oSTCIn7=STCIn7; nol_LoopCnt=nol_LoopCnt+1
+              oSTCIn5=STCIn5
+              oChCount=ChCount
+              oSTCIn17=STCIn17
+              oSTCIn18=p-1
+            }
+            // Now restart the loop
+            Restarting=true
+            setTimeout("STCMain()",1)
+            return 0
+          }
+        }
+      } //Next
+        STCIn12_=STCIn12		// necessary for "restart" implementation
+        }				//
+      } //Next				//
+        STCIn13_=STCIn13		//
+        }				//
+      } //Next				//
+        STCIn11_=STCIn11		//
+      } //Next				//
+        nol_LoopCnt=nol_LoopCnt+1	//
+        if (nol_LoopCnt % 41==0) {
+			window.status="正在計算薪俸稅，完成" + Math.floor(nol_LoopCnt*100/nol_Loops) + "%"
+/*		  if (parent.browserID=="IE4Win31") {	// Display percentage completed
+            window.status="完成" + Math.floor(nol_LoopCnt*100/nol_Loops) + "%"
+          } else {
+            window.status="正在計算薪俸稅，完成" + Math.floor(nol_LoopCnt*100/nol_Loops) + "%"
+          }*/
+        }
+        STCIn6_=STCIn6			//
+      } //Next				//
+        STCIn7_=STCIn7			//
+      } //Next				//
+        STCIn5_=STCIn5			//
+      } //Next n
+        ChCount_=ChCount
+      } //Next q
+        STCIn17_=STCIn17
+      } //Next p
+    } else { // ClaimDDA == false
+      for (p=STCIn18_; p>=0; p--) {
+      for (q=STCIn17_; q>=0; q--) {
+      for (n=ChCount_; n>=0; n--) {
+      for (o=STCIn5_; o>=0; o--) {
+      for (l=STCIn7_; l>=0; l--) {
+      for (m=STCIn6_; m>=0; m--) {
+        // Compute all self/spouse NCIs
+//        slfNCI=netSelfI-AL_SING-AASing-CA[n*STCIn4]-DBSA*o-DPA*(l+m)-ADPA*m
+//               -SDPGPA*(p+q)-SADPGPA*q - DIS_DA*STCIn19
+/* 27/02/2017 Also deduct Personal Disability ALLOWANCE
+        slfNCI=netSelfI-AL_SING-AASing-CA[n*STCIn4]-DBSA*o-DPA*(l+m)-ADPA*m
+               -SDPGPA*(p+q)-SADPGPA*q - DIS_DA*STCIn19 -(CA[n*STCIn21]+NBCA[n*STCIn21])
+*/
+        slfNCI=netSelfI-AL_SING-STCOut[80]-AASing-CA[n*STCIn4]-DBSA*o-DPA*(l+m)-ADPA*m
+               -SDPGPA*(p+q)-SADPGPA*q - DIS_DA*STCIn19 -(CA[n*STCIn21]+NBCA[n*STCIn21])
+        if (slfNCI<0) slfNCI=0
+//        spsNCI=netSpouseI-AL_SING-AASing-CA[(1-n)*STCIn4]-DBSA*(STCIn5-o)-DPA*(DPNo-(l+m))-ADPA*(ADPNo-m)
+//               -SDPGPA*(SDPNo-(p+q))-SADPGPA*(SADPNo-q) - DIS_DA*STCIn20
+/* 27/02/2017 Also deduct Personal Disability ALLOWANCE
+		spsNCI=netSpouseI-AL_SING-AASing-CA[(1-n)*STCIn4]-DBSA*(STCIn5-o)-DPA*(DPNo-(l+m))-ADPA*(ADPNo-m)
+               -SDPGPA*(SDPNo-(p+q))-SADPGPA*(SADPNo-q) - DIS_DA*STCIn20 - (CA[(1-n)*STCIn21]+NBCA[(1-n)*STCIn21])
+*/
+		spsNCI=netSpouseI-AL_SING-STCOut[81]-AASing-CA[(1-n)*STCIn4]-DBSA*(STCIn5-o)-DPA*(DPNo-(l+m))-ADPA*(ADPNo-m)
+               -SDPGPA*(SDPNo-(p+q))-SADPGPA*(SADPNo-q) - DIS_DA*STCIn20 - (CA[(1-n)*STCIn21]+NBCA[(1-n)*STCIn21])
+        if (spsNCI<0) spsNCI=0
+        // Compute all TPs & remember if standard rate is used
+        slfTP=CompTP(slfStdTP,slfNCI)
+        slfStd=StdFlag
+        spsTP=CompTP(spsStdTP,spsNCI)
+        spsStd=StdFlag
+//        CurTP=slfTP+spsTP
+//        CurTP=slfTP+spsTP-CalculateRebate(slfTP, YrEnd)-CalculateRebate(spsTP, YrEnd)
+        CurTP=Math.floor(slfTP+spsTP-CalculateRebate(slfTP, YrEnd)-CalculateRebate(spsTP, YrEnd)); if (CurTP<0) CurTP=0
+        CurJntTP=Math.floor(slfTP+spsTP); if (CurJntTP<0) CurJntTP=0
+        // Check if multiple best options are available
+        //if (CurTP==MinTP) {
+        //  MultiOpt=true
+        //} else if (CurTP<MinTP) {
+        //  MultiOpt=false
+        //}
+        // Maintain minimum TP & corresponding array indice
+//					if ((CurTP<MinTP) || ((CurTP==MinTP) && ((slfNCI<slfMinNCI) || (slfNCI==0)))) {
+		if ((CurTP<MinTP) || ((CurTP==MinTP) && (CurJntTP<MinJntTP)) || ((CurTP==MinTP) && (CurJntTP==MinJntTP) && (slfNCI<slfMinNCI))) {
+			MinTP=CurTP
+			MinJntTP=CurJntTP
+			slfMinStd=slfStd
+			spsMinStd=spsStd
+			slfMinNCI=slfNCI
+			nMin=n; oMin=o; lMin=l; mMin=m
+			pMin=p; qMin=q
+        }
+        //*******************************************************
+        // Do a restarting, so as to display processing status  *
+        //*******************************************************
+        InLoopCnt=InLoopCnt+1
+        // Check if it is time to restart
+        if (InLoopCnt>=InLoopLim) {
+          // First, save calculation result up to now
+          SavPar0=ChCount
+          SavPar1=DPNo
+          SavPar2=ADPNo
+          SavPar3=nMin
+          SavPar4=oMin
+          SavPar5=lMin
+          SavPar6=mMin
+          //SavPar7=nMin1
+          //SavPar8=oMin1
+          //SavPar9=lMin1
+          //SavPar10=mMin1
+          //SavPar11=odMin
+          //SavPar12=ldMin
+          //SavPar13=mdMin
+          //SavPar14=odMin1
+          //SavPar15=ldMin1
+          //SavPar16=mdMin1
+          SavPar17=MinTP
+          //SavPar18=MinTP1
+          SavPar19=slfMinStd
+          SavPar20=spsMinStd
+          SavPar21=slfMinNCI
+          //SavPar22=slfMinStd1
+          //SavPar23=spsMinStd1
+          //SavPar24=slfMinNCI1
+//          SavPar25=MultiOpt
+          SavPar26=DDAspsGranted
+          //SavPar27=TotalDIS_DA
+          SavPar28=slfStdTP
+          SavPar29=spsStdTP
+          SavPar30=jointStdTP
+          SavPar31=netSelfI
+          SavPar32=netSpouseI
+          SavPar33=netJointI
+          SavPar34=SDPNo
+          SavPar35=SADPNo
+          SavPar36=pMin
+          SavPar37=qMin
+          //SavPar38=pMin1
+          //SavPar39=qMin1
+          // Set indices to be use on restart
+          if (m>0) {
+            oSTCIn6=m-1
+            oSTCIn7=l
+            oSTCIn5=o
+            oChCount=n
+            oSTCIn17=q
+            oSTCIn18=p
+          } else if (l>0) {
+            oSTCIn6=STCIn6
+            oSTCIn7=l-1; nol_LoopCnt=nol_LoopCnt+1
+            oSTCIn5=o
+            oChCount=n
+            oSTCIn17=q
+            oSTCIn18=p
+          } else if (o>0) {
+            oSTCIn6=STCIn6
+            oSTCIn7=STCIn7; nol_LoopCnt=nol_LoopCnt+1
+            oSTCIn5=o-1
+            oChCount=n
+            oSTCIn17=q
+            oSTCIn18=p
+          } else if (n>0) {
+            oSTCIn6=STCIn6
+            oSTCIn7=STCIn7; nol_LoopCnt=nol_LoopCnt+1
+            oSTCIn5=STCIn5
+            oChCount=n-1
+            oSTCIn17=q
+            oSTCIn18=p
+          } else if (q>0) {
+            oSTCIn6=STCIn6
+            oSTCIn7=STCIn7; nol_LoopCnt=nol_LoopCnt+1
+            oSTCIn5=STCIn5
+            oChCount=ChCount
+            oSTCIn17=q-1
+            oSTCIn18=p
+          } else {
+            oSTCIn6=STCIn6
+            oSTCIn7=STCIn7; nol_LoopCnt=nol_LoopCnt+1
+            oSTCIn5=STCIn5
+            oChCount=ChCount
+            oSTCIn17=STCIn17
+            oSTCIn18=p-1
+          }
+          // Now restart the loop
+          Restarting=true
+          setTimeout("STCMain()",1)
+          return 0
+        }
+      } //Next
+        nol_LoopCnt=nol_LoopCnt+1
+        if (nol_LoopCnt % 41==0) {
+            window.status="正在計算薪俸稅，完成" + Math.floor(nol_LoopCnt*100/nol_Loops) + "%"
+/*          if (parent.browserID=="IE4Win31") {
+            window.status="完成" + Math.floor(nol_LoopCnt*100/nol_Loops) + "%"
+          } else {
+            window.status="正在計算薪俸稅，完成" + Math.floor(nol_LoopCnt*100/nol_Loops) + "%"
+          }*/
+        }
+        STCIn6_=STCIn6
+      } //Next
+        STCIn7_=STCIn7
+      } //Next
+        STCIn5_=STCIn5
+      } //Next n
+        ChCount_=ChCount
+      } //Next q
+        STCIn17_=STCIn17
+      } //Next p
+    }
+    // Compute joint NCI & TP if DDA-spouse is granted
+//    jntNCIDDAsps=netJointI-(AL_MARR+AAMarr)-CA[STCIn4]-DBSA*STCIn5-(DPA*DPNo+ADPA*ADPNo)-DIS_DA*(1+STCIn10+STCIn11+STCIn12+STCIn13)
+//                 -(SDPGPA*SDPNo+SADPGPA*SADPNo) - DIS_DA*(STCIn19+STCIn20)
+/* 27/02/2017 Also deduct Personal Disability ALLOWANCE
+    jntNCIDDAsps=netJointI-(AL_MARR+AAMarr)-CA[STCIn4]-DBSA*STCIn5-(DPA*DPNo+ADPA*ADPNo)-DIS_DA*(1+STCIn10+STCIn11+STCIn12+STCIn13+STCIn22)
+                 -(SDPGPA*SDPNo+SADPGPA*SADPNo) - DIS_DA*(STCIn19+STCIn20)-(CA[STCIn21]+NBCA[STCIn21])
+*/
+    jntNCIDDAsps=netJointI-(AL_MARR+AAMarr)-(STCOut[80]+STCOut[81])-CA[STCIn4]-DBSA*STCIn5-(DPA*DPNo+ADPA*ADPNo)-DIS_DA*(1+STCIn10+STCIn11+STCIn12+STCIn13+STCIn22)
+                 -(SDPGPA*SDPNo+SADPGPA*SADPNo) - DIS_DA*(STCIn19+STCIn20)-(CA[STCIn21]+NBCA[STCIn21])
+    if (jntNCIDDAsps<0) jntNCIDDAsps=0
+    jntTPDDAsps=CompTP(jointStdTP,jntNCIDDAsps)
+// AS REQUESTED BY IRD USERS, EVEN IN THE CASE OF JOINT ASSESSMENT = BESTOPT
+// SHOW THE "SEPARATE BESTOPT" OF ALL CASES INSTEAD OF CASES WHERE DDAspsGranted = true
+//    // Use minimum TP & corresponding array indice
+//    if ((DDAspsGranted==true) && (MinTP>jntTPDDAsps)) {
+//      MinTP=MinTP1
+//      slfMinStd=slfMinStd1
+//      spsMinStd=spsMinStd1
+//      slfMinNCI=slfMinNCI1
+//      nMin=nMin1; oMin=oMin1; lMin=lMin1; mMin=mMin1
+//      odMin=odMin1; ldMin=ldMin1; mdMin=mdMin1
+//      pMin=pMin1; qMin=qMin1
+//    }
+    // Compute separate assessment
+    STCOut[0]=STCIn2
+    STCOut[1]=STCIn3
+    STCOut[3]=AL_SING+AASing
+    STCOut[6]=CA[nMin*STCIn4]
+    STCOut[7]=DBSA*oMin
+    STCOut[9]=(DPA+ADPA)*mMin
+    STCOut[10]=DPA*lMin
+    STCOut[8]=STCOut[9]+STCOut[10]
+    STCOut[61]=(SDPGPA+SADPGPA)*qMin
+    STCOut[62]=SDPGPA*pMin
+    STCOut[60]=STCOut[61]+STCOut[62]
+    if (STCIn26==true) { //Slf
+      STCOut[80]=DIS_DA
+	} else {
+      STCOut[80]=0	
+    }	
+    if (STCIn27==true) { //Sps
+      STCOut[81]=DIS_DA
+	} else {
+      STCOut[81]=0	
+    }
+	STCOut[73]=CA[nMin*STCIn21]+NBCA[nMin*STCIn21]
+    if (STCIn8==true) {
+      STCOut[11]=DIS_DA*(nMin*(STCIn10+STCIn22)+odMin+ldMin+mdMin+STCIn19)
+    } else {
+      STCOut[11]=DIS_DA*STCIn19
+    }
+//    STCOut[24]=STCOut[3]+STCOut[6]+STCOut[7]+STCOut[8]+STCOut[60]+STCOut[11]+STCOut[73]
+    STCOut[24]=STCOut[3]+STCOut[6]+STCOut[7]+STCOut[8]+STCOut[60]+STCOut[11]+STCOut[73]+STCOut[80]
+    STCOut[12]=CA[(1-nMin)*STCIn4]
+    STCOut[13]=DBSA*(STCIn5-oMin)
+    STCOut[15]=(DPA+ADPA)*(STCIn6-mMin)
+    STCOut[16]=DPA*(STCIn7-lMin)
+    STCOut[14]=STCOut[15]+STCOut[16]
+    STCOut[64]=(SDPGPA+SADPGPA)*(STCIn17-qMin)
+    STCOut[65]=SDPGPA*(STCIn18-pMin)
+    STCOut[63]=STCOut[64]+STCOut[65]
+	STCOut[74]=CA[(1-nMin)*STCIn21]+NBCA[(1-nMin)*STCIn21]
+    if (STCIn8==true) {
+      STCOut[17]=DIS_DA*((1-nMin)*(STCIn10+STCIn22)+STCIn11-odMin+STCIn13-ldMin+STCIn12-mdMin+STCIn20)
+    } else {
+      STCOut[17]=DIS_DA*STCIn20
+    }
+//    STCOut[25]=STCOut[3]+STCOut[12]+STCOut[13]+STCOut[14]+STCOut[63]+STCOut[17]+STCOut[74]
+    STCOut[25]=STCOut[3]+STCOut[12]+STCOut[13]+STCOut[14]+STCOut[63]+STCOut[17]+STCOut[74]+STCOut[81]
+    STCOut[27]=netSelfI-STCOut[24]
+    if (STCOut[27]<0) STCOut[27]=0
+    STCOut[28]=netSpouseI-STCOut[25]
+    if (STCOut[28]<0) STCOut[28]=0
+    STCOut[30]=Math.floor(CompTP(slfStdTP,STCOut[27]))
+    STCOut[34]=slfMinStd
+    STCOut[31]=Math.floor(CompTP(spsStdTP,STCOut[28]))
+    STCOut[35]=spsMinStd
+    STCOut[32]=STCOut[30]+STCOut[31]
+    slfRebate=CalculateRebate(STCOut[30], YrEnd)
+    spsRebate=CalculateRebate(STCOut[31], YrEnd)
+    STCOut[37]=nMin*STCIn4
+    STCOut[38]=oMin
+    STCOut[39]=mMin
+    STCOut[40]=lMin
+    STCOut[69]=qMin
+    STCOut[70]=pMin
+    STCOut[41]=(1-nMin)*STCIn4
+    STCOut[42]=STCIn5-oMin
+    STCOut[43]=STCIn6-mMin
+    STCOut[44]=STCIn7-lMin
+    STCOut[71]=STCIn17-qMin
+    STCOut[72]=STCIn18-pMin
+	STCOut[76]=nMin*STCIn21
+	STCOut[77]=(1-nMin)*STCIn21
+    if (STCIn8==true) {
+//      STCOut[45]=nMin*STCIn10
+      STCOut[45]=nMin*(STCIn10+STCIn22)
+      STCOut[46]=odMin
+      STCOut[47]=mdMin
+      STCOut[48]=ldMin
+      STCOut[49]=STCOut[45]+STCOut[46]+STCOut[47]+STCOut[48]+STCIn19
+//      STCOut[50]=(1-nMin)*STCIn10
+      STCOut[50]=(1-nMin)*(STCIn10+STCIn22)
+      STCOut[51]=STCIn11-odMin
+      STCOut[52]=STCIn12-mdMin
+      STCOut[53]=STCIn13-ldMin
+      STCOut[54]=STCOut[50]+STCOut[51]+STCOut[52]+STCOut[53]+STCIn20
+    } else {
+      STCOut[49]=STCIn19
+      STCOut[54]=STCIn20
+    }
+//    STCOut[56]=MultiOpt
+    // Compute joint assessment
+    STCOut[2]=STCIn2+STCIn3
+    STCOut[4]=AL_MARR+AAMarr
+    STCOut[18]=CA[STCIn4]
+    STCOut[19]=DBSA*STCIn5
+    STCOut[21]=(DPA+ADPA)*STCIn6
+    STCOut[22]=DPA*STCIn7
+    STCOut[20]=STCOut[21]+STCOut[22]
+    STCOut[67]=(SDPGPA+SADPGPA)*STCIn17
+    STCOut[68]=SDPGPA*STCIn18
+    STCOut[66]=STCOut[67]+STCOut[68]
+    STCOut[75]=CA[STCIn21]+NBCA[STCIn21]
+    if (STCIn8==true) {
+      // Grant DDA-spouse?
+//      if ( (STCIn9==true) && ((STCIn2-STCOut[3]-STCOut[57])>0) ) {
+		if ( (STCIn9==true) && ((STCIn2-STCOut[3]-STCOut[57])>0) ) {
+			if ( (dF.D15a.selectedIndex==0) || ((dF.D15a.selectedIndex==1) && ((STCIn2-STCOut[3]-STCOut[57]-DIS_DA)>0)) ) {
+				STCOut[23]=DIS_DA*(1+STCIn10+STCIn11+STCIn12+STCIn13+STCIn19+STCIn20+STCIn22)
+				STCOut[55]=true
+				spsDDA=true
+			} else {
+				STCOut[23]=DIS_DA*(STCIn10+STCIn11+STCIn12+STCIn13+STCIn19+STCIn20+STCIn22)
+				spsDDA=false
+			}	
+      } else {
+        STCOut[23]=DIS_DA*(STCIn10+STCIn11+STCIn12+STCIn13+STCIn19+STCIn20+STCIn22)
+        spsDDA=false
+      }
+    } else { // STCIn8 == false
+      STCOut[23]=DIS_DA*(STCIn19+STCIn20)
+    }
+//    if (slfPDA) STCOut[23]=STCOut[23]+DIS_DA
+//	if (spsPDA) STCOut[23]=STCOut[23]+DIS_DA
+//    STCOut[26]=STCOut[4]+STCOut[18]+STCOut[19]+STCOut[20]+STCOut[66]+STCOut[23]+STCOut[75]
+    STCOut[26]=STCOut[4]+STCOut[18]+STCOut[19]+STCOut[20]+STCOut[66]+STCOut[23]+STCOut[75]+STCOut[80]+STCOut[81]
+    STCOut[29]=netJointI-STCOut[26]
+    if (STCOut[29]<0) STCOut[29]=0
+    STCOut[33]=Math.floor(CompTP(jointStdTP,STCOut[29]))
+    STCOut[36]=StdFlag
+    JARebate=CalculateRebate(STCOut[33], YrEnd)
+    // Set return flag, 40=JA Adv, 30=JA Disadv.
+    if ((STCOut[33]-JARebate)<(STCOut[32]-slfRebate-spsRebate)) {
+    	if (spsDDA) {
+    		// Bestopt 
+    		STCMainRV=42
+/*    		STCOut[24]=STCOut[3]
+    		STCOut[25]=STCOut[3]+STCOut[12]+STCOut[13]+STCOut[14]+STCOut[63]+STCOut[17]+STCOut[74]+STCOut[6]+STCOut[7]+STCOut[8]+STCOut[60]+STCOut[11]+STCOut[73]
+*/
+    		STCOut[24]=STCOut[3]+STCOut[80]
+    		STCOut[25]=STCOut[3]+STCOut[12]+STCOut[13]+STCOut[14]+STCOut[63]+STCOut[17]+STCOut[74]+STCOut[6]+STCOut[7]+STCOut[8]+STCOut[60]+STCOut[11]+STCOut[73]+STCOut[81]
+    		STCOut[27]=netSelfI-STCOut[24]+STCOut[78]
+    		if (STCOut[27]<0) STCOut[27]=0
+    		STCOut[28]=netSpouseI-STCOut[25]-STCOut[78]
+    		if (STCOut[28]<0) STCOut[28]=0
+    		if (STCOut[78]>0) {
+    		    STCOut[57]=STCOut[57]-STCOut[78]
+    		    STCOut[58]=STCOut[58]+STCOut[78]
+    		    netSelfI=STCIn2-STCIn14+STCOut[78]
+    		    if (netSelfI<0) netSelfI=0
+    		    netSpouseI=STCIn3-STCIn15-STCOut[78]
+    		    if (netSpouseI<0) netSpouseI=0
+    		    slfStdTP=netSelfI*STD_RATE/100		//self TP at standard rate
+    		    spsStdTP=netSpouseI*STD_RATE/100		//spouse TP at standard rate
+    		}
+    		STCOut[30]=Math.floor(CompTP(slfStdTP,STCOut[27]))
+    		STCOut[34]=StdFlag
+    		STCOut[31]=Math.floor(CompTP(spsStdTP,STCOut[28]))
+    		STCOut[35]=StdFlag
+    		STCOut[32]=STCOut[30]+STCOut[31]
+    		slfRebate=CalculateRebate(STCOut[30], YrEnd)
+    		spsRebate=CalculateRebate(STCOut[31], YrEnd)
+    		if ( (STCOut[33]-JARebate)>(STCOut[32]-slfRebate-spsRebate)) {
+    			STCMainRV=45
+    		}
+    	} else {
+		    STCMainRV=40
+    	}
+    } else {
+      STCMainRV=30
+    }
+  }
+  Calculating=false
+  window.status = ""
+  parent.taxtype=STCMainRV
+  parent.STCIn0=STCIn0
+  parent.YrEnd=YrEnd
+  for (n=0; n<STCOut.length; n++) {
+    parent.STCOut[n]=STCOut[n]
+  }
+  if (rbflag == false) {
+	  setTimeout("DisplayResult()", 1)
+      return STCMainRV
+  }
+  else {
+  	setTimeout("DisplayLSP()", 1)
+	return STCMainRV
+  }
+}
+function DisplayResult() {
+  var url,i
+  url=""+document.location
+  url=url.toLowerCase()
+  i=url.lastIndexOf("/")
+  if (i==-1) i=url.lastIndexOf("\\")
+  url=url.substring(0,i+1)+"coutdis.htm"
+  parent.main.location.href=url
+}
+<!-- Linda Lin - Calculation for the Relate Back function --16 Oct 2006 --!>
+function CalRelateBack() {
+	// check whether is Single Tax payer
+	obj=dF.D2
+	rbflag = true
+if (obj[1].checked) {
+	if (parseInt(dF.T2.value) > 0) {
+		ErrMsg("此軟件並不適用於配偶有入息的已婚人士！")
+		rbflag = false
+		dF.T2.focus()
+	}
+	else {
+		if (parseInt(dF.T1.value) <= 0) {
+			ErrMsg("請先輸入該課稅年度的總收入。")
+			rbflag = false
+			dF.T1.value = 0
+			dF.T1.focus()
+		}
+		else if (parseInt(dF.T13.value) > 0) {
+			ErrMsg("由於居所租值的計算須視乎所收取的整筆款項的性質，此軟件的計算並不適用於你。")
+			rbflag = false
+			dF.T13.focus()
+		} else {
+		   CalculateTaxWithDelay()
+		 }
+ 	}
+}
+else {  // Single Tax payer
+	<!-- use org to calc the tax --!>
+	<!-- Display the Lump Sum Payment Input Menu --!>
+	if (parseInt(dF.T1.value) <= 0) {
+		ErrMsg("請先輸入該課稅年度的總收入。")
+		rbflag = false
+		dF.T1.value = 0
+		dF.T1.focus()
+	}
+	else if (parseInt(dF.T13.value) > 0) {
+		ErrMsg("由於居所租值的計算須視乎所收取的整筆款項的性質，此軟件的計算並不適用於你。")
+		rbflag = false
+		dF.T13.focus()
+	} else {
+	   CalculateTaxWithDelay()
+	  }
+    }
+}
+function DisplayLSP() {
+var url,i
+  url=""+document.location
+  url=url.toLowerCase()
+  i=url.lastIndexOf("/")
+  if (i==-1) i=url.lastIndexOf("\\")
+  url=url.substring(0,i+1)+"crballocate.htm"
+  parent.main.location.href=url
+}
+function detailinfo() {
+	window.open("crbinfo.htm", "popup", "menubar=no, toolbar=no, location=no, directories=no, status=no, resizable=0, scrollbars=0, width=540, height=450")
+}
+//-->
+</SCRIPT>
+<body onLoad="initPage()">
+<P>
+<CENTER><a href="https://www.ird.gov.hk" target="_blank"><img src="../image/banner.gif" width="750" height="62" border="0" alt="稅 務 局"></a><BR>
+<H3>計 算 薪 俸 稅</H3>
+</CENTER>
+</P>
+<form name="fI" onReset="return false">
+<center>
+<table border="0" width="710">
+  <tr>
+    <td width="33%"> 課 稅 年 度</td>
+    <td width="53%">
+<script type="text/javascript">
+	document.write("<b>"+GetYrofAss()+"</b>")
+</script>
+    <input type="hidden" name="D1" value="2021-2022">
+    </td>
+    <td width="14%">&nbsp</td>
+  </tr>
+  <br>
+  <br>
+  <tr>
+    <td width="33%">婚 姻 狀 況</td>
+    <td width="53%"><input type="radio" id="SingleSeparatedDivorcedWidowed" title="婚姻狀況" value="S" checked name="D2" onClick="D2OnClick()">
+    單 身 / 分 居 / 離 婚 / 喪 偶</td>
+    <td width="14%"><input type="radio" id="Married" title="婚姻狀況" value="M" name="D2" onClick="D2OnClick()">已 婚</td>
+  </tr>
+</table>
+</center>
+<hr>
+<center>
+<table border="0" width="710">
+  <tr>
+    <td width="50%">&nbsp</td>
+    <td width="25%" align="center">本 人<br>港 元<br><font size="2">(不 計 算 角 、 分)</font></td>
+    <td width="25%" align="center">配 偶<br>港 元<br><font size="2">(不 計 算 角 、 分)</font></td>
+  </tr>
+  <tr>
+    <td width="50%">課 稅 年 度 的 <a href="https://www.gov.hk/tc/residents/taxes/salaries/salariestax/chargeable/index.htm" target="_blank"><em>總 入 息</em></A></td>
+    <td width="25%" align="center"><input type="text" id="SelfIncome" title="Income" name="T1" size="11" maxlength="9" value="0" onFocus="TxtOnFocus(dF.T1)" onBlur="T1OnBlur()"></td>
+    <td width="25%" align="center"><input type="text" id="SpouseIncome" title="Income" name="T2" size="11" maxlength="9" value="0" onFocus="TxtOnFocus(dF.T2)" onBlur="T2OnBlur()"></td>
+  </tr>
+  <tr>
+    <td width="50%">所 有 獲 僱 主 或 相 聯 公 司 <a href="https://www.gov.hk/tc/residents/taxes/salaries/salariestax/chargeable/residence.htm" target="_blank"><em>提 供 居 所 的 租 值</em></A></td>
+    <td width="25%" align="center"><input type="text" id="SelfResidence" title="Residence" name="T13" size="11" maxlength="9" value="0" onFocus="TxtOnFocus(dF.T13)" onBlur="T13OnBlur()"></td>
+    <td width="25%" align="center"><input type="text" id="SpouseResidence" title="Residence" name="T14" size="11" maxlength="9" value="0" onFocus="TxtOnFocus(dF.T14)" onBlur="T14OnBlur()"></td>
+  </tr>
+  <tr><td width="100%" colspan="3">&nbsp<br>&nbsp</td></tr>
+  <tr><td width="100%" colspan="3">扣 除</td></tr>
+  <tr>
+    <td width="50%"><a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/deductions/index.htm" target="_blank"><em>支 出 及 開 支</em></A></td>
+    <td width="25%" align="center"><input type="text" id="SelfOAndE" title="Outgoings and Expenses" name="T15" size="11" maxlength="9" value="0" onFocus="TxtOnFocus(dF.T15)" onBlur="ChkDD(15)"></td>
+    <td width="25%" align="center"><input type="text" id="SpouseOAndE" title="Outgoings and Expenses" name="T16" size="11" maxlength="9" value="0" onFocus="TxtOnFocus(dF.T16)" onBlur="ChkDD(16)"></td>
+  </tr>
+  <tr>
+    <td width="50%"><a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/deductions/selfeducation.htm" target="_blank"><em>個 人 進 修 開 支</em></a></td>
+    <td width="25%" align="center"><input type="text" id="SelfEducationExpenses" title="Self Education Expenses" name="T5" size="11" maxlength="9" value="0" onFocus="TxtOnFocus(dF.T5)" onBlur="ChkDD(5)"></td>
+    <td width="25%" align="center"><input type="text" id="SpouseEducationExpenses" title="Self Education Expenses" name="T6" size="11" maxlength="9" value="0" onFocus="TxtOnFocus(dF.T6)" onBlur="ChkDD(6)"></td>
+  </tr>
+  <tr>
+    <td width="50%"><a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/deductions/approveddonation.htm" target="_blank"><em>認 可 慈 善 捐 款</em></a></td>
+    <td width="25%" align="center"><input type="text" id="SelfApprovedDonations" title="Approved Charitable Donations" name="T3" size="11" maxlength="9" value="0" onFocus="TxtOnFocus(dF.T3)" onBlur="ChkDD(3)"></td>
+    <td width="25%" align="center"><input type="text" id="SpouseApprovedDonations" title="Approved Charitable Donations" name="T4" size="11" maxlength="9" value="0" onFocus="TxtOnFocus(dF.T4)" onBlur="ChkDD(4)"></td>
+  </tr>
+  <tr>
+    <td width="50%"><a href="https://www.ird.gov.hk/chi/pdf/pam38c.pdf" target="_blank"><em>認 可 退 休 計 劃 的 強 制 性 供 款</em></a></td>
+    <td width="25%" align="center"><input type="text" id="SelfMPF" title="MPF" name="T11" size="11" maxlength="9" value="0" onFocus="TxtOnFocus(dF.T11)" onBlur="ChkDD(11)"></td>
+    <td width="25%" align="center"><input type="text" id="SpouseMPF" title="MPF" name="T12" size="11" maxlength="9" value="0" onFocus="TxtOnFocus(dF.T12)" onBlur="ChkDD(12)"></td>
+  </tr>
+  <tr>
+    <td width="50%"><a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/deductions/annuity.htm#b" target="_blank"><em>可 扣 稅 強 積 金 自 願 性 供 款</em></A></td>
+    <td width="25%" align="center"><input type="text" id="SelfMPFV" title="MPF voluntary contributions" name="T38" size="11" maxlength="9" value="0" onFocus="TxtOnFocus(dF.T38)" onBlur="ChkDD(38)"></td>
+    <td width="25%" align="center"><input type="text" id="SpouseMPFV" title="MPF voluntary contributions" name="T39" size="11" maxlength="9" value="0" onFocus="TxtOnFocus(dF.T39)" onBlur="ChkDD(39)"></td>
+  </tr>
+  <tr>
+    <td width="50%"><a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/deductions/annuity.htm#a" target="_blank"><em>合 資 格 年 金 保 費</em></A></td>
+    <td width="25%" align="center"><input type="text" id="SelfAnnuity" title="Qualifying Annuity Premiums" name="T40" size="11" maxlength="9" value="0" onFocus="TxtOnFocus(dF.T40)" onBlur="ChkDD(40)"></td>
+    <td width="25%" align="center"><input type="text" id="SpouseAnnuity" title="Qualifying Annuity Premiums" name="T41" size="11" maxlength="9" value="0" onFocus="TxtOnFocus(dF.T41)" onBlur="ChkDD(41)"></td>
+  </tr>
+  <tr>
+    <td width="50%"><a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/deductions/homeloan.htm" target="_blank"><em>居 所 貸 款 利 息</em></a></td>
+    <td width="25%" align="center"><input type="text" id="SelfHomeLoanInterest" title="Home Loan Interest" name="T7" size="11" maxlength="9" value="0" onFocus="TxtOnFocus(dF.T7)" onBlur="ChkDD(7)"></td>
+    <td width="25%" align="center"><input type="text" id="SpouseHomeLoanInterest" title="Home Loan Interest" name="T8" size="11" maxlength="9" value="0" onFocus="TxtOnFocus(dF.T8)" onBlur="ChkDD(8)"></td>
+  </tr>
+  <tr>
+	<td width="50%"><a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/deductions/vhis.htm" target="_blank"><em>合 資 格 醫 療 保 險 保 費</em></A></td>
+    <td width="25%">&nbsp;</td>
+    <td width="25%">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="50%">-&nbsp;&nbsp;&nbsp;&nbsp;支 付 本 人 的 款 額</td>
+    <td width="25%" align="center"><input type="text" id="T34" name="T34" size="11" maxlength="9" value="0" onFocus="TxtOnFocus(dF.T34)" onBlur="ChkDD(34)"></td>
+    <td width="25%" align="center"><input type="text" id="T35" name="T35" size="11" maxlength="9" value="0" onFocus="TxtOnFocus(dF.T35)" onBlur="ChkDD(35)"></td>
+  </tr>
+   <tr>
+    <td width="50%">-&nbsp;&nbsp;&nbsp;&nbsp;指 明 親 屬 數 目</td>
+    <td width="25%" align="center" valign="bottom"><select name="D32" id="D32" size="1" onChange="D32OnChange()">
+      <option value="0">0</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+    </select></td>
+    <td width="25%" align="center" valign="bottom"><select name="D33" id="D33" size="1" onChange="D33OnChange()">
+      <option value="0">0</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+    </select></td>
+  </tr>
+  <tr>
+    <td width="50%">-&nbsp;&nbsp;&nbsp;&nbsp;支 付 指 明 親 屬 的 款 額</td>
+    <td width="25%" align="center"><input type="text" id="T36" name="T36" size="11" maxlength="9" value="0" onFocus="TxtOnFocus(dF.T36)" onBlur="ChkDD(36)"></td>
+    <td width="25%" align="center"><input type="text" id="T37" name="T37" size="11" maxlength="9" value="0" onFocus="TxtOnFocus(dF.T37)" onBlur="ChkDD(37)"></td>
+  </tr>
+  <tr>
+    <td width="50%"><a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/deductions/elderly.htm" target="_blank"><em>長 者 住 宿 照 顧 開 支</em></a></td>
+    <td width="25%">&nbsp;</td>
+    <td width="25%">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="50%">-&nbsp;&nbsp;&nbsp;&nbsp;在 安 老 院 居 住 的 受 養 人 數 目</td>
+    <td width="25%" align="center" valign="bottom"><select name="D18" id="SelfEldery" title="Elderly Residential Care Expenses" size="1" onChange="D18OnChange()">
+      <option value="0">0</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+    </select></td>
+    <td width="25%" align="center" valign="bottom"><select name="D19" id="SpouseEldery" title="Elderly Residential Care Expenses" size="1" onChange="D19OnChange()">
+      <option value="0">0</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+    </select></td>
+  </tr>
+  <tr>
+    <td width="50%">-&nbsp;&nbsp;&nbsp;&nbsp;符 合 <a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#dda" target="_blank"><em>傷 殘 受 養 人 免 稅 額</em></a> 資 格 的<br>
+                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;受 養 人 數 目</td>
+    <td width="25%" align="center"><select name="D20" id="SelfDisabledDependant" title="Disabled Dependant Allowance" size="1" onChange="D20OnChange()">
+      <option value="0">0</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+    </select></td>
+    <td width="25%" align="center"><select name="D21" id="SpouseDisabledDependant" title="Disabled Dependant Allowance" size="1" onChange="D21OnChange()">
+      <option value="0">0</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+    </select></td>
+  </tr>
+  <tr>
+    <td width="50%">-&nbsp;&nbsp;&nbsp;&nbsp;支 付 給 安 老 院 的 開 支 款 額</td>
+    <td width="25%" align="center"><input type="text" id="SelfResidentialAmount" title="Residential care home amount" name="T9" size="11" maxlength="9" value="0" onFocus="TxtOnFocus(dF.T9)" onBlur="ChkDD(9)"></td>
+    <td width="25%" align="center"><input type="text" id="SpouseResidentialAmount" title="Residential care home amount" name="T10" size="11" maxlength="9" value="0" onFocus="TxtOnFocus(dF.T10)" onBlur="ChkDD(10)"></td>
+  </tr>
+  <tr><td width="100%" colspan="3">&nbsp;</td></tr>
+  <tr><td width="100%" colspan="3">免 稅 額</td></tr>
+  <tr>
+    <td width="50%">符 合 資 格 申 請 <a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#pda" target="_blank"><em>傷 殘 人 士 免 稅 額</em></a></td>
+    <td width="25%" align="center"><select name="D15a" id="SelfPDA" title="Self Personal Disability Allowance" size="1" onChange="D15aOnChange()">
+      <option value="false">否</option>
+      <option value="true">是</option>
+    </select></td>
+    <td width="25%" align="center"><select name="D15b" id="SpousePDA" title="Spouse Personal Disability Allowance" size="1" onChange="D15bOnChange()">
+      <option value="false">否</option>
+      <option value="true">是</option>
+    </select></td>
+  </tr>
+</table>
+</center>
+<hr>
+<center>
+<table border="0" width="710">
+  <tr><td width="100%" colspan="3">
+    <A href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm" target="_blank"><em>申 請 免 稅 額</em></A>	
+  </td></tr>
+  <tr>
+    <td width="50%" valign="top"><em>請 輸 入 你 和 你 配 偶（如 適 用）<br />所 申 請 有 關 免 稅 額 的 受 養 人 總 數。</em></td>
+    <td width="20%" align="center" valign="top">受 養 人 數 目</td>
+    <td width="30%" align="center">在 你 申 請 的<br>受 養 人 中 ，  符 合<br>  <a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#dda" target="_blank"><em>傷 殘 受 養 人 免 稅 額</em></a><br> 資 格 的 數 目</td>
+  </tr>
+  <tr>
+    <td width="50%"><a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#ca" target="_blank"><em>供 養 子 女</em></a>  數 目</td>
+<script type="text/javascript">
+if (HasNBCA("2021-2022")) {
+   document.write("<td width=\"25%\" align=\"center\"></td>"+
+    	"<td width=\"25%\" align=\"center\"></td>"+
+  		"</tr>"+"<tr>"+
+    	"<td width=\"50%\">-&nbsp;&nbsp;&nbsp;&nbsp;在 課 稅 年 度 內 出 生</td>"+
+    	"<td width=\"25%\" align=\"center\"><select name=\"D3a\" id=\"ChildBornThisYr\" title=\"Child born in the year\" size=\"1\" onChange=\"D3aOnChange()\">"+
+        "<option value=\"0\">0</option>"+
+        "<option value=\"1\">1</option>"+
+        "<option value=\"2\">2</option>"+
+        "<option value=\"3\">3</option>"+
+        "<option value=\"4\">4</option>"+
+        "<option value=\"5\">5</option>"+
+        "<option value=\"6\">6</option>"+
+        "<option value=\"7\">7</option>"+
+        "<option value=\"8\">8</option>"+
+        "<option value=\"9\">9</option>"+
+    	"</select></td>"+
+    	"<td width=\"25%\" align=\"center\"><select name=\"D4a\" id=\"DisabledChildBornThisYr\" title=\"Disabled Child born in the year\" size=\"1\" onChange=\"D4aOnChange()\">"+
+        "<option value=\"0\">0</option>"+
+        "<option value=\"1\">1</option>"+
+        "<option value=\"2\">2</option>"+
+        "<option value=\"3\">3</option>"+
+        "<option value=\"4\">4</option>"+
+        "<option value=\"5\">5</option>"+
+        "<option value=\"6\">6</option>"+
+        "<option value=\"7\">7</option>"+
+        "<option value=\"8\">8</option>"+
+        "<option value=\"9\">9</option>"+
+    	"</select></td>"+
+  		"</tr>"+"<tr>"+
+    	"<td width=\"50%\">-&nbsp;&nbsp;&nbsp;&nbsp;在 其 他 課 稅 年 度 出 生</td>");
+}
+</script>
+    <td width="20%" align="center"><select name="D3" id=\"ChildBornOtherYr\" title=\"Child born in other year\" size="1" onChange="D3OnChange()">
+      <option value="0">0</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+      <option value="9">9</option>
+    </select></td>
+    <td width="30%" align="center"><select name="D4" id=\"DisabledChildBornOtherYr\" title=\"Disabled Child born in other year\" size="1" onChange="D4OnChange()">
+      <option value="0">0</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+      <option value="9">9</option>
+    </select></td>
+  </tr>
+</table>  
+<table border="0" width="710">
+  <tr>
+    <td width="35%"><a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#spa" target="_blank"><em>單 親 免 稅 額</em></A></td>
+    <td width="15%" align="right"><select name="D22" id="SingleParentAllowance" title="Single Parent Allowance" size="1" onChange="D22OnChange()">
+      <option value="false">否</option>
+      <option value="true">是</option>
+    </select></td>
+    <td width="50%" align="center"></td>
+  </tr>  
+  <tr><td width="100%" colspan="3">&nbsp;</td></tr>
+</table>  
+<table border="0" width="710">
+  <tr>
+    <td width="50%"><a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#dbsa" target="_blank"><em>供 養 兄 弟 / 姊 妹</em></a>  數 目</td>
+    <td width="25%" align="center"><select name="D5" id="DependentBrothersSis" title="Dependent brothers or sisters" size="1" onChange="D5OnChange()">
+      <option value="0">0</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+      <option value="9">9</option>
+    </select></td>
+    <td width="25%" align="center"><select name="D6" id="DisabledDependentBrothersSis" title="Disabled Dependent brothers or sisters" size="1" onChange="D6OnChange()">
+      <option value="0">0</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+      <option value="9">9</option>
+    </select></td>
+  </tr>
+  <tr><td width="100%" colspan="3">&nbsp;</td></tr>
+  <tr>
+    <td width="50%"><A href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#dpa" target="_blank"><em>供 養 年 滿 60 歲 或 以 上 ， 或 雖 未 滿 60 歲 ， 但 有 資 格 申 索 政 府 傷 殘 津 貼 的 父 母 / 祖 父 母 或 外 祖 父 母</em></A> 數 目</td>
+    <td width="25%">&nbsp;</td>
+    <td width="25%">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="50%">-&nbsp;&nbsp;&nbsp;&nbsp;<A href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#dpa" target="_blank"><em>全 年 與 你 同 住</em></A></td>
+    <td width="25%" align="center" valign="bottom"><select name="D7" id="DependentparentsResided" title="供養全年與你同住的年滿60歲或以上，或雖未滿60歲，但有資格申索政府傷殘津貼的父母/祖父母或外祖父母" size="1" onChange="D7OnChange()">
+      <option value="0">0</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+    </select></td>
+    <td width="25%" align="center" valign="bottom"><select name="D8" id="DisabledDependentparentsResided" title="供養全年與你同住,有資格申索政府傷殘津貼的父母/祖父母或外祖父母" size="1" onChange="D8OnChange()">
+      <option value="0">0</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+    </select></td>
+  </tr>
+  <tr>
+    <td width="50%">-&nbsp;&nbsp;&nbsp;&nbsp;<A href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#dpa" target="_blank"><em>並 非 全 年 與 你 同 住</em></A></td>
+    <td width="25%" align="center"><select name="D9" id="DependentparentsNotResided" title="供養並非全年與你同住的年滿60歲或以上的父母/祖父母或外祖父母" size="1" onChange="D9OnChange()">
+      <option value="0">0</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+    </select></td>
+    <td width="25%" align="center"><select name="D10" id="DisabledDependentparentsNotResided" title="Disabled Dependent parents or grandparents Over 60" size="1" onChange="D10OnChange()">
+      <option value="0">0</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+    </select></td>
+  </tr>
+  <tr><td width="100%" colspan="3">&nbsp;</td></tr>
+  <tr>
+    <td width="50%"><A href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#dpa" target="_blank"><em>供 養 年 滿 55 歲 但 未 滿 60 歲 的 父 母 / 祖 父 母 或 外 祖 父 母</em></A> 數 目 </td>
+    <td width="25%">&nbsp;</td>
+    <td width="25%">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="50%">-&nbsp;&nbsp;&nbsp;&nbsp;<A href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#dpa" target="_blank"><em>全 年 與 你 同 住</em></A></td>
+    <td width="25%" align="center" valign="bottom"><select name="D16" id="Dependentparents55_60Resided" title="供養全年與你同住的年滿55歲但未滿60歲的父母/祖父母或外祖父母" size="1" onChange="D16OnChange()">
+      <option value="0">0</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+    </select></td>
+    <td width="25%" align="center" valign="bottom">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="50%">-&nbsp;&nbsp;&nbsp;&nbsp;<A href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#dpa" target="_blank"><em>並 非 全 年 與 你 同 住</em></A></td>
+    <td width="25%" align="center"><select name="D17" id="Dependentparents55_60NotResided" title="供養並非全年與你同住的年滿55歲但未滿60歲的父母/祖父母或外祖父母" size="1" onChange="D17OnChange()">
+      <option value="0">0</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+    </select></td>
+    <td width="25%" align="center">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="100%" colspan="3">&nbsp</td>
+  </tr>
+  <tr>
+    <td width="70%" colspan="2">你 的 配 偶 符 合 資 格 申 請 <a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#dda" target="_blank"><em>傷 殘 受 養 人 免 稅 額</em></a></td>
+    <td width="30%" align="center"><select name="D15" id="SpouseDisabledDependent" title="傷殘配偶受養人" size="1" onChange="D15OnChange()">
+      <option value="false">否</option>
+      <option value="true">是</option>
+    </select></td>
+  </tr>
+</table>
+</center>
+<hr>
+<br>
+<table border="0" width="100%">
+  <tr><td width="25%">&nbsp</td>
+      <td width="25%" align='center'><input type="button" id="ResetButton" title="重新輸入" value="重 新 輸 入" name="B2" onClick="B2OnClick()"></td>
+      <td width="25%" align='center'><input type="button" id="ComputeButton" title="計算" value="計 算" name="B1" onClick="CalculateTaxWithDelay()"></td>
+      <td width="25%">&nbsp</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td align='center'>&nbsp;</td>
+    <td align='center'>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+<hr>
+<table border="0" width="100%">
+<tr>
+  <td align="left"><b>攤 分 及 撥 回 整 筆 款 項</b></tr>
+</tr>
+<tr><td>&nbsp;</td></tr>
+<tr>
+<td align="left">
+<p>如 你 曾 收 取 補 發 薪 金 ／ 工 資 或 者 退 休 離 職 ／ 終 止 僱 傭 合 約 時 發 放 的 獎 賞 ／ 酬 金 ， 你 可 申 請 將 整 筆 款 項 撥 回 賺 取 該 款 項 的 有 關 期 間 評 稅 ， 而 攤 分 及 撥 回 評 稅 的 期 間 限 為 36 個 月 。 如 有 關 期 間 超 過 36 個 月 ， 款 項 總 額 將 會 以 固 定 比 率 攤 分 36 個 月 ， 即 以 你 有 權 申 索 該 款 項 的 日 期 或 停 止 受 僱 的 日 期 ﹝ 如 適 用 的 話 ﹞ 為 止 的 前 36 個 月 ， 兩 者 以 較 早 的 為 準 。<br /><br />
+請 <input name="but3" type="button" id="but3" value="按 此" onClick="javascript:window.open('https://www.gov.hk/tc/residents/taxes/salaries/salariestax/chargeable/backpay.htm')"> 以 得 悉 更 多 有 關 攤 分 及 撥 回 的 資 料 。<br /><br />
+請 <input name="but2" type="button" id="but2" value="按 此" onClick="CalRelateBack()"> 計 算 攤 分 及 撥 回 整 筆 款 項 評 稅 是 否 對 你 有 利 。 本 局 只 會 在 可 減 少 你 所 須 繳 付 的 稅 款 之 情 況 下 ， 才 會 按 申 請 將 整 筆 款 項 用 攤 分 及 撥 回 的 方 法 評 稅 。<br /><br />
+﹝ 請 注 意 ， 由 於 居 所 租 值 的 計 算 須 視 乎 所 收 取 的 整 筆 款 項 的 性 質 ， 如 你 在 有 關 期 間 曾 獲 僱 主 提 供 居 所 ， 此 軟 件 的 計 算 並 不 適 用 於 你 。 ﹞
+</p></td>
+</tr>
+</table>
+</form>
+<HR>
+<P>
+  <table width="602" border="0" align="center" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
+    <tr>
+      <td height="15" bgcolor="#FFFFFF" width="301">
+        <font face="Arial, Helvetica, sans-serif" size="2"><b>2017</b>
+        <img src="../../../images/copy.gif" width="12" height="11" align="absmiddle">|
+        </font><font size="2"><a href="../../notices.htm" target="_blank">重要告示</a></font></td>
+      <td height="15" algin="right" bgcolor="#FFFFFF" width="300">
+        <font size="2">修訂日期: 2022 年 4 月 14 日</font></td>
+      <td width="1" height="15"></td>
+    </tr>
+  </table>
+</P>
+</body>
+</html>

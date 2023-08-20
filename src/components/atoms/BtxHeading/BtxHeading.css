@@ -1,0 +1,37 @@
+@import url(../../common.css);
+
+.btx-heading {
+  font-family: "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  border: 0;
+  cursor: pointer;
+  display: flex;
+  font-size: 1.5em;
+  line-height: 1;
+}
+
+.btx-heading--primary {
+  color: white;
+  background-color: var(--brand-color);
+}
+
+.btx-heading--secondary {
+  color: #333;
+  background-color: transparent;
+  /* box-shadow: rgba(0, 0, 0, 0.15) 0 0 0 1px inset; */
+}
+
+.btx-heading--small {
+  /* font-size: 12px; */
+  padding: 10px 16px;
+}
+
+.btx-heading--medium {
+  /* font-size: 14px; */
+  padding: 11px 20px;
+}
+
+.btx-heading--large {
+  /* font-size: 16px; */
+  padding: 12px 24px;
+}

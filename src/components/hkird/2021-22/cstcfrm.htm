@@ -1,0 +1,104 @@
+﻿<html>
+<head>
+<meta http-equiv='Content-Type' content='text/html; charset=Big5'>
+<meta http-equiv="Pragma" content="no-cache">
+<title>計算薪俸稅</title>
+</head>
+<script language="JavaScript">
+<!--
+var JustLoaded,frmInStatus,i
+var STCIn0,STCOut,taxtype,YrEnd
+var STCInMAX,STCOutMAX
+var browserID
+//STCInMAX=55
+//STCOutMAX=83
+STCInMAX=63
+STCOutMAX=88
+JustLoaded=true
+//frmInStatus=new Array(43)
+//STCOut=new Array(73)
+frmInStatus=new Array(STCInMAX)
+STCOut=new Array(STCOutMAX)
+for (i=0; i<frmInStatus.length; i++) {
+  frmInStatus[i] = 0
+}
+frmInStatus[1] = true
+frmInStatus[27] = "0"
+frmInStatus[28] = "0"
+frmInStatus[29] = "0"
+frmInStatus[30] = "0"
+frmInStatus[31] = "0"
+frmInStatus[32] = "0"
+frmInStatus[33] = ""
+frmInStatus[34] = ""
+frmInStatus[35] = ""
+frmInStatus[36] = ""
+<!-- Relate Back 28 Aug 2006 - linda lin --!>
+var LSPYrEnd
+var iTAX_RANGE = new Array(16)
+var iTAX_RATE = new Array(17)
+var iTAX_RATE_R
+var firstview
+var LSPincome
+var LSPbDate, LSPeDate
+var Calculating
+var FAYA = new Array(4)
+var FAYABD = new Array(4)
+var FAYAED = new Array(4)
+var LSPDate = new Array(4)
+var LSPAmt = new Array(4)
+var i, ivalue
+var ttldays,ttlc
+var inds, inde
+var NetCharge = new Array(4)
+var TaxTereon = new Array(4)
+var TaxCBRB = new Array(4)
+var TaxACPY = new Array(4)
+var LSPyeari = new Array(4)
+var LSPded = new Array(4)
+var LSPall = new Array(4)
+var rbo 
+var stdrate = new Array(4)
+var CBRBstdrate = new Array(4)
+parent.rbo = 'N'
+parent.ttldays = 0
+parent.ttlc = 0
+parent.inds = 0
+parent.inde = 0
+parent.firstview = false
+LSPincome = 0
+for (i=0; i<5; i++) {
+	LSPyeari[i]=0
+	LSPded[i]=0
+	LSPall[i]=0
+	NetCharge[i]=0
+	TaxTereon[i]=0
+	TaxCBRB[i]=0
+	TaxACPY[i]=0
+}
+function checkBrowser()
+{
+  var s=navigator.appVersion.toLowerCase();
+  //Identify Internet Explorer 4 under Windows 3.1
+  if (s.indexOf("msie 4")!=-1 && s.indexOf("windows 3.1")!=-1) {
+    browserID="IE4Win31"
+  //Identify Internet Explorer 4 under Win32
+  } else if (s.indexOf("msie 4")!=-1 && s.indexOf("windows")!=-1) {
+    browserID="IE4Win"
+  } else {
+    browserID="DontCare"
+  }
+}
+checkBrowser()
+//-->
+</script>
+<frameset cols="100%,*">
+  <frame name="main" src="cstc.htm" frameborder="no" noresize>
+  <frame name="empty" src="empty.html" frameborder="no" noresize>
+  <noframes>
+  <body>
+  <p>This page uses frames, but your browser doesn't support them.</p>
+  </body>
+  </noframes>
+</frameset>
+</html>

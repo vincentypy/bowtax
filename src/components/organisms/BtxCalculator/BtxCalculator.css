@@ -1,0 +1,62 @@
+@import url(../../common.css);
+
+.btx-calculator {
+  max-width: 960px;
+  min-width: 340px;
+  margin: auto;
+  border-radius: 8px;
+  font-family: "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 400;
+  /* border: 1px solid #DDD;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-block;
+  line-height: 1; */
+  box-sizing: border-box;
+  box-shadow: 0 0 12px -5px #aaa;
+  background-color: var(--background-color);
+}
+.btx-calculator * {
+  box-sizing: border-box;
+}
+
+.btx-tooltip-content {
+  max-width: 300px;
+  line-height: 1.3;
+}
+
+.deduct-title {
+  margin: 0 0 0 36px;
+  display: inline-block;
+}
+/* 
+.btx-calculator--primary {
+  color: #333;
+}
+
+.btx-calculator--secondary {
+  color: #333;
+  box-shadow: rgba(0, 0, 0, 0.15) 0 0 0 1px inset;
+}
+
+.btx-calculator--small {
+  font-size: 12px;
+  padding: 10px 16px;
+}
+
+.btx-calculator--medium {
+  font-size: 14px;
+  padding: 11px 20px;
+}
+
+.btx-calculator--large {
+  font-size: 16px;
+  padding: 12px 24px;
+} */
+
+@media screen and (min-width: 768px) {
+  .btx-calculator {
+    margin: 8px auto;
+    padding: 12px;
+  }
+}

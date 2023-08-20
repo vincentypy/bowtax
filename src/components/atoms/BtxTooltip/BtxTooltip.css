@@ -1,0 +1,50 @@
+@import url(../../common.css);
+
+.btx-tooltip {
+  font-family: "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+
+  display: inline;
+  line-height: 1;
+  vertical-align: -50%;
+}
+
+.btx-tooltip-clickable {
+  margin-top: -5px;
+  position: relative;
+  z-index: 11;
+}
+
+.btx-tooltip-clickable a {
+  color: #fff;
+}
+
+.btx-tooltip--primary {
+  color: #333;
+}
+
+.btx-tooltip--secondary {
+  border: 0;
+  border-radius: 0;
+  color: #333;
+  background-color: transparent;
+  /* box-shadow: rgba(0, 0, 0, 0.15) 0 0 0 1px inset; */
+}
+
+.btx-tooltip--small {
+  font-size: 12px;
+}
+
+.btx-tooltip--medium {
+  font-size: 14px;
+}
+
+.btx-tooltip--large {
+  font-size: 16px;
+}
+
+@media screen and (min-width: 768px) {
+}
