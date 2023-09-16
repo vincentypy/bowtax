@@ -114,9 +114,7 @@ export const BtxCalculatorOut = ({
           </pre>
           <div>
           {
-            sOut.length !== 0 && isMarried ? 
-            showResult(sOut, (window as any).STCMainRV, (window as any).YrEnd, false, true)
-            : showResult(sOut, (window as any).STCMainRV, (window as any).YrEnd, false, false)
+            showResult(sOut, (window as any).STCMainRV, (window as any).YrEnd, false, sOut.length !== 0 && isMarried)
           }
           </div>
         </BtxCard>

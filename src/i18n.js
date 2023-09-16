@@ -199,6 +199,10 @@ const resources = {
 
 
       "---hint": "",
+      "hintIncome": "所有薪金、工資及董事酬金均須要課繳薪俸税。",
+      "hintResidence": "獲僱主提供居所，居所「租值」將會包括在你的應予評税的入息內。",
+      "hintDisabledDependant": "供養一名有資格根據「香港政府傷殘津貼計劃」領取津貼的家屬，你便可申索傷殘受養人免税額。",
+
       "hintSelfEducationExpenses": "個人進修開支最高扣除額為港元100,000。",
       "hintSelfOAndE": "完全、純粹及必須為產生該評稅入息而招致的所有支出及開支",
       "hintSelfApprovedDonations": "可捐款總額須不少於$100，並不得超過你在該年度的入息減去可扣除支出及折舊免税額後或應評税利潤的35%。",
@@ -210,6 +214,12 @@ const resources = {
 
       "hintSectionVhis": "每名納税人就每名受保人可獲容許最高扣除額為8,000元。",
       "hintSectionEldery": "每位受養人最高扣除額港元100,000，上限：4人",
+
+      "hintPDA": "合資格根據「香港政府傷殘津貼計劃」領取津貼，可申索傷殘人士免税額。",
+
+      "hintChild": "你供養的未婚子女在有關課税年度內符合條件，你便可申索子女免税額。",
+      "hintParent60": "在本年度內供養父母／祖父母／外祖父母，你可就每名受供養的申請免税額。",
+      "hintBrothersSis": "你供養的未婚兄弟姊妹在有關課税年度內符合條件，你便可申索供養兄弟姊妹免税額。",
 
       "hintSelfEldery": "收入需大於0",
       "hintSpouseEldery": "收入需大於0",

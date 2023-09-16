@@ -9,7 +9,7 @@ window.isMarried = false;
 window.dF = {};
 
 export const RawHTML = (props) => {
-  const {sOut, setSOut, setIsMarried, sumbitData}  = props;
+  const {sOut, setSOut, setIsMarried, submitData}  = props;
 
   const formRef = useRef();
   const cstcRef = useRef();
@@ -542,17 +542,23 @@ function ChkDD(X) {
   if (IsNIL(dF.T1) && spsHasIncome) {
     if (NotNIL(dF.T3) || NotNIL(dF.T9)  || NotNIL(dF.T380) || dF.D18.selectedIndex>0 || dF.D20.selectedIndex>0 || NotNIL(dF.T34) || NotNIL(dF.T40) || dF.D32.selectedIndex>0 || NotNIL(dF.T36)) {
       ClrTxt(dF.T3)
-setTimeout(() => {setSelfApprovedDonations(-99999999999);}, 60); // T3
+
+setTimeout(() => {setSelfApprovedDonations(-99999999999);}, 60); // T3
       ClrTxt(dF.T9)
-setTimeout(() => {setSelfResidentialAmount(-99999999999);}, 60); // T9
+
+setTimeout(() => {setSelfResidentialAmount(-99999999999);}, 60); // T9
       ClrTxt(dF.T34)
-setTimeout(() => {setSelfVhis(-99999999999);}, 60); // T34
+
+setTimeout(() => {setSelfVhis(-99999999999);}, 60); // T34
       ClrTxt(dF.T36)
-setTimeout(() => {setSelfVhisRelateAmount(-99999999999);}, 60); // T36
+
+setTimeout(() => {setSelfVhisRelateAmount(-99999999999);}, 60); // T36
       ClrTxt(dF.T40)
-setTimeout(() => {setSelfAnnuity(-99999999999);}, 60); // T40
+
+setTimeout(() => {setSelfAnnuity(-99999999999);}, 60); // T40
 	  ClrTxt(dF.T380)
-setTimeout(() => {setSelfMPFV2(-99999999999);}, 60); // T380
+
+setTimeout(() => {setSelfMPFV2(-99999999999);}, 60); // T380
       dF.D32.selectedIndex=0;
   setTimeout(() => {setSelfVhisRelateCount(-99999999999);}, 60);  // add D32
 
@@ -571,11 +577,14 @@ function ChkDD(X) {
   if (IsNIL(dF.T1)) {
     if (NotNIL(dF.T3) || NotNIL(dF.T5) || NotNIL(dF.T9) || NotNIL(dF.T11) || dF.D18.selectedIndex>0 || dF.D20.selectedIndex>0 || NotNIL(dF.T15) || NotNIL(dF.T34) || NotNIL(dF.T36) || NotNIL(dF.T38) || NotNIL(dF.T380) || NotNIL(dF.T40) || dF.D32.selectedIndex>0) {
       ClrTxt(dF.T3)
-setTimeout(() => {setSelfApprovedDonations(-99999999999);}, 60); // T3
+
+setTimeout(() => {setSelfApprovedDonations(-99999999999);}, 60); // T3
       ClrTxt(dF.T5)
-setTimeout(() => {setSelfEducationExpenses(-99999999999);}, 60); // T5
+
+setTimeout(() => {setSelfEducationExpenses(-99999999999);}, 60); // T5
       ClrTxt(dF.T9)
-setTimeout(() => {setSelfResidentialAmount(-99999999999);}, 60); // T9
+
+setTimeout(() => {setSelfResidentialAmount(-99999999999);}, 60); // T9
       dF.D18.selectedIndex=0;
   setTimeout(() => {setSelfEldery(-99999999999);}, 60);  // add D18
 
@@ -583,19 +592,25 @@ function ChkDD(X) {
   setTimeout(() => {setSelfDisabledDependant(-99999999999);}, 60);  // add D20
 
       ClrTxt(dF.T11)
-setTimeout(() => {setSelfMPF(-99999999999);}, 60); // T11
+
+setTimeout(() => {setSelfMPF(-99999999999);}, 60); // T11
       ClrTxt(dF.T15)
 	setTimeout(() => {setSelfOAndE(-99999999999);}, 60); // add T15
       ClrTxt(dF.T34)
-setTimeout(() => {setSelfVhis(-99999999999);}, 60); // T34
+
+setTimeout(() => {setSelfVhis(-99999999999);}, 60); // T34
       ClrTxt(dF.T36)
-setTimeout(() => {setSelfVhisRelateAmount(-99999999999);}, 60); // T36
+
+setTimeout(() => {setSelfVhisRelateAmount(-99999999999);}, 60); // T36
       ClrTxt(dF.T38)
-setTimeout(() => {setSelfMPFV(-99999999999);}, 60); // T38
+
+setTimeout(() => {setSelfMPFV(-99999999999);}, 60); // T38
 	  	  ClrTxt(dF.T380)
-setTimeout(() => {setSelfMPFV2(-99999999999);}, 60); // T380
+
+setTimeout(() => {setSelfMPFV2(-99999999999);}, 60); // T380
       ClrTxt(dF.T40)
-setTimeout(() => {setSelfAnnuity(-99999999999);}, 60); // T40
+
+setTimeout(() => {setSelfAnnuity(-99999999999);}, 60); // T40
       dF.D32.selectedIndex=0;
   setTimeout(() => {setSelfVhisRelateCount(-99999999999);}, 60);  // add D32
 
@@ -685,7 +700,8 @@ function ChkDD(X) {
     if (NotNIL(dF.T3)) {
       iv=FormatInput(dF.T3.value,lv,uv)
       a=FormatInput(dF.T3.value,0,99999999999)
-      let v1="0"
+
+      let v1="0"
       if (iv=="*") {
         MsgID=1
       } else if (iv=="-") {
@@ -738,7 +754,8 @@ function ChkDD(X) {
     if (NotNIL(dF.T4)) {
       iv=FormatInput(dF.T4.value,lv,uv)
       a=FormatInput(dF.T4.value,0,99999999999)
-      let v1="0"
+
+      let v1="0"
       if (iv=="*") {
         MsgID=1
       } else if (iv=="-") {
@@ -781,7 +798,8 @@ function ChkDD(X) {
 	  if (NotNIL(dF.T38)) {
 		iv=FormatInput(dF.T38.value,0,LimD_VTC)
 		a=FormatInput(dF.T38.value,0,99999999999)
-		let v1="0"
+
+		let v1="0"
 		if (YrEnd<2020 && iv!="0") {
 		  MsgID=3
 		  b=2020
@@ -818,7 +836,8 @@ function ChkDD(X) {
 	  if (NotNIL(dF.T380)) {
 		iv=FormatInput(dF.T380.value,0,LimD_RD)
 		b=FormatInput(dF.T380.value,0,99999999999)
-		let v1="0"
+
+		let v1="0"
 	   if (iv=="*") {
 		  MsgID=1
 		} else if (iv=="+") {
@@ -842,7 +861,8 @@ function ChkDD(X) {
 		}
 		iv=FormatInput(dF.T40.value,0,newLimD_VTC)
 		a=FormatInput(dF.T40.value,0,99999999999)
-		let v1="0"	
+
+		let v1="0"	
 		if (YrEnd<2020 && iv!="0") {
 		  MsgID=3
 		  b=2020
@@ -868,7 +888,8 @@ function ChkDD(X) {
 		} else {
 			iv=FormatInput(dF.T39.value,0,LimD_VTC)
 			a=FormatInput(dF.T39.value,0,99999999999)
-			let v1="0"
+
+			let v1="0"
 			if (YrEnd<2020 && iv!="0") {
 			  MsgID=3
 			  b=2020
@@ -910,7 +931,8 @@ function ChkDD(X) {
 		} else {
 			iv=FormatInput(dF.T390.value,0,LimD_RD)
 			a=FormatInput(dF.T390.value,0,99999999999)
-			let v1="0"
+
+			let v1="0"
 			if (iv=="*") {
 			  MsgID=1
 			} else if (iv=="+") {
@@ -940,7 +962,8 @@ function ChkDD(X) {
 			}
 			iv=FormatInput(dF.T41.value,0,newLimD_VTC)
 			a=FormatInput(dF.T41.value,0,99999999999)
-			let v1="0"	
+
+			let v1="0"	
 			if (YrEnd<2020 && iv!="0") {
 				MsgID=3
 				b=2020
@@ -962,7 +985,8 @@ function ChkDD(X) {
   if (NotNIL(dF.T5)) {
     iv=FormatInput(dF.T5.value,0,LimD_Education)
     a=FormatInput(dF.T5.value,0,99999999999)
-    let v1="0"
+
+    let v1="0"
     if (YrEnd<1997 && iv!="0") {
       MsgID=3
       b=1997
@@ -982,7 +1006,8 @@ function ChkDD(X) {
   if (NotNIL(dF.T6)) {
     iv=FormatInput(dF.T6.value,0,LimD_Education)
     a=FormatInput(dF.T6.value,0,99999999999)
-    let v1="0"
+
+    let v1="0"
     if (YrEnd<1997 && iv!="0") {
       MsgID=3
       b=1997
@@ -1002,7 +1027,8 @@ function ChkDD(X) {
   if (NotNIL(dF.T7)) {
     iv=FormatInput(dF.T7.value,0,LimD_HomeLoan)
     a=FormatInput(dF.T7.value,0,99999999999)
-    let v1="0"
+
+    let v1="0"
     if (YrEnd<1999 && iv!="0") {
       MsgID=3
       b=1999
@@ -1026,7 +1052,8 @@ function ChkDD(X) {
     } else {
       iv=FormatInput(dF.T8.value,0,LimD_HomeLoan)
       a=FormatInput(dF.T8.value,0,99999999999)
-      let v1="0"
+
+      let v1="0"
       if (YrEnd<1999 && iv!="0") {
         MsgID=3
         b=1999
@@ -1047,7 +1074,8 @@ function ChkDD(X) {
   if (NotNIL(dF.T9)) {
     iv=FormatInput(dF.T9.value,0,LimD_Elderly*dF.D18.selectedIndex)
     a=FormatInput(dF.T9.value,0,99999999999)
-    let v1="0"
+
+    let v1="0"
     if (YrEnd<1999 && iv!="0") {
       MsgID=3
       b=1999
@@ -1067,7 +1095,8 @@ function ChkDD(X) {
   if (NotNIL(dF.T10)) {
     iv=FormatInput(dF.T10.value,0,LimD_Elderly*dF.D19.selectedIndex)
     a=FormatInput(dF.T10.value,0,99999999999)
-    let v1="0"
+
+    let v1="0"
     if (YrEnd<1999 && iv!="0") {
       MsgID=3
       b=1999
@@ -1087,7 +1116,8 @@ function ChkDD(X) {
   if (NotNIL(dF.T34)) {
     iv=FormatInput(dF.T34.value,0,LimD_VHIS)
     a=FormatInput(dF.T34.value,0,99999999999)
-    let v1="0"
+
+    let v1="0"
     if (YrEnd<2020 && iv!="0") {
       MsgID=3
       b=2020
@@ -1107,7 +1137,8 @@ function ChkDD(X) {
   if (NotNIL(dF.T35)) {
     iv=FormatInput(dF.T35.value,0,LimD_VHIS)
     a=FormatInput(dF.T35.value,0,99999999999)
-    let v1="0"
+
+    let v1="0"
     if (YrEnd<2020 && iv!="0") {
       MsgID=3
       b=2020
@@ -1127,7 +1158,8 @@ function ChkDD(X) {
   if (NotNIL(dF.T36)) {
     iv=FormatInput(dF.T36.value,0,LimD_VHIS*dF.D32.selectedIndex)
     a=FormatInput(dF.T36.value,0,99999999999)
-    let v1="0"
+
+    let v1="0"
     if (YrEnd<2020 && iv!="0") {
       MsgID=3
       b=2020
@@ -1147,7 +1179,8 @@ function ChkDD(X) {
   if (NotNIL(dF.T37)) {
     iv=FormatInput(dF.T37.value,0,LimD_VHIS*dF.D33.selectedIndex)
     a=FormatInput(dF.T37.value,0,99999999999)
-    let v1="0"
+
+    let v1="0"
     if (YrEnd<2020 && iv!="0") {
       MsgID=3
       b=2020
@@ -1176,7 +1209,8 @@ function ChkDD(X) {
     if (NotNIL(dF.T11)) {
       iv=FormatInput(dF.T11.value,0,uv)
       a=FormatInput(dF.T11.value,0,99999999999)
-      let v1="0"
+
+      let v1="0"
       if (YrEnd<2001 && iv!="0") {
         MsgID=3
         b=2001
@@ -1214,7 +1248,8 @@ function ChkDD(X) {
     if (NotNIL(dF.T12)) {
       iv=FormatInput(dF.T12.value,0,uv)
       a=FormatInput(dF.T12.value,0,99999999999)
-      let v1="0"
+
+      let v1="0"
       if (YrEnd<2001 && iv!="0") {
         MsgID=3
         b=2001
@@ -3324,8 +3359,8 @@ function detailinfo() {
 
   const doCalculation = useCallback(() => {
     CalculateTaxWithDelay();
-    sumbitData(userInput);
-  }, [userInput, sumbitData]);
+    submitData(userInput);
+  }, [userInput, submitData]);
 
   return (<>
     

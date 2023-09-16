@@ -14,6 +14,9 @@
 
   --text-color-primary: #333;
   --background-color: #FFF;
+
+  --progress-color: #ff0068;
+  --pending-color: #fce5f1;
 }
 
 html {

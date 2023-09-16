@@ -48,7 +48,8 @@
 
 .btx-label--section {
   width: 100%;
-  display: block;
+  display: flex;
+  align-items: center;
   border: 0;
   border-left: 4px solid var(--secondary-primary-100);
   font-size: 1.2rem;
@@ -56,15 +57,21 @@
 
 @media screen and (min-width: 768px) {
   .btx-label {
-    width: 240px;
+    /* width: 240px; */
   }
   .btx-label--small {
     padding: 10px 16px;
   }
   .btx-label--medium {
-    padding: 11px 20px;
+    padding: 11px 24px;
   }
   .btx-label--large {
     padding: 12px 24px;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .btx-label {
+    width: 240px;
   }
 }

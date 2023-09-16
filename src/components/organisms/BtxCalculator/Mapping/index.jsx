@@ -160,16 +160,12 @@ function PrintSTCResult() {
   }
 }
 
-export function showResult(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
-  parent.STCOut = STCOut;
-
+function calResult(taxtype, STCOut, YrEnd, hasTaxRebate, isMarried) {
   function FormatSTC (STCidx) {
     return STCOut[STCidx];
   }
 
-  var slfRebateAmt=CalculateRebate(STCOut[30], YrEnd);
-  
-  var a = {
+  return  {
     "總 入 息": {
       value: FormatSTC(0),
       condition: taxtype==10
@@ -230,7 +226,7 @@ export function showResult(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
       value: FormatSTC(27),
       condition: taxtype==10,
     },
-
+  
     // // Has tax rebate
     // "你 應 繳 的 總 税 款(* 用 標 準 税 率 計 算)": {
     //   value: FormatSTC(30),
@@ -252,8 +248,8 @@ export function showResult(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
       value: STCOut[30],
       condition: taxtype==10 && STCOut[34]==false,
     },
-
-
+  
+  
     // parent.taxtype==22
     // MARR_SELF (single income family)
     "總 入 息 (single income family)": {
@@ -316,8 +312,8 @@ export function showResult(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
       value: FormatSTC(30),
       condition: taxtype==22 && !hasTaxRebate && STCOut[34]==true,
     },
-
-
+  
+  
     // parent.taxtype==24
     // MARR_SPOUSE (single income family)
     "總 入 息 (single income family - MARR_SPOUSE)": {
@@ -380,8 +376,8 @@ export function showResult(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
       value: FormatSTC(31),
       condition: taxtype==24 && !hasTaxRebate && STCOut[35]==true,
     },
-
-
+  
+  
     // parent.taxtype==30
     // Married - separate taxation
     // 根 據 你 輸 入 的 資 料 ， 你 和 你 配 偶 分 開 評 税 較 為 有 利 。 
@@ -505,11 +501,11 @@ export function showResult(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
       value: FormatSTC(21),
       condition: taxtype==30 && YrEnd > 2005,
     },
-
-
-
-
-
+  
+  
+  
+  
+  
     "免 税 額：－ 並 非 全 年 與 你 同 住 的 - 供 養 父 母 / 祖 父 母 或 外 祖 父 母 - 年 齡 為 55 至 59 歲  (Married - separate taxation - SELF)": {
       value: FormatSTC(62),
       condition: taxtype==30 && YrEnd > 2005,
@@ -534,9 +530,9 @@ export function showResult(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
       value: FormatSTC(22),
       condition: taxtype==30 && YrEnd > 2005,
     },
-
-
-
+  
+  
+  
     "免 税 額：－ 全 年 與 你 同 住 的 - 供 養 父 母 / 祖 父 母 或 外 祖 父 母 (稅務年度2005年前) (Married - separate taxation - SELF)": {
       value: FormatSTC(9),
       condition: taxtype==30 && YrEnd <= 2005,
@@ -561,7 +557,7 @@ export function showResult(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
       value: FormatSTC(22),
       condition: taxtype==30 && YrEnd <= 2005,
     },
-
+  
     "免 税 額：－ 傷 殘 受 養 人 (Married - separate taxation - SELF)": {
       value: FormatSTC(11),
       condition: taxtype==30,
@@ -627,12 +623,12 @@ export function showResult(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
       value: FormatSTC(32) < FormatSTC(33) ? FormatSTC(32) : FormatSTC(33),
       condition: taxtype==30,
     },
-
-
-
-
-
-
+  
+  
+  
+  
+  
+  
     // parent.taxtype==40
     // Married - joint taxation 1
     // 根 據 你 輸 入 的 資 料 ， 你 和 你 配 偶 選 擇 合 併 評 税 會 較 為 有 利 。 
@@ -756,11 +752,11 @@ export function showResult(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
       value: FormatSTC(21),
       condition: taxtype==40 && YrEnd > 2005,
     },
-
-
-
-
-
+  
+  
+  
+  
+  
     "免 税 額：－ 並 非 全 年 與 你 同 住 的 - 供 養 父 母 / 祖 父 母 或 外 祖 父 母 - 年 齡 為 55 至 59 歲  (Married - joint taxation 1 - SELF)": {
       value: FormatSTC(62),
       condition: taxtype==40 && YrEnd > 2005,
@@ -785,9 +781,9 @@ export function showResult(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
       value: FormatSTC(22),
       condition: taxtype==40 && YrEnd > 2005,
     },
-
-
-
+  
+  
+  
     "免 税 額：－ 全 年 與 你 同 住 的 - 供 養 父 母 / 祖 父 母 或 外 祖 父 母 (稅務年度2005年前) (Married - joint taxation 1 - SELF)": {
       value: FormatSTC(9),
       condition: taxtype==40 && YrEnd <= 2005,
@@ -812,7 +808,7 @@ export function showResult(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
       value: FormatSTC(22),
       condition: taxtype==40 && YrEnd <= 2005,
     },
-
+  
     "免 税 額：－ 傷 殘 受 養 人 (Married - joint taxation 1 - SELF)": {
       value: FormatSTC(11),
       condition: taxtype==40,
@@ -882,22 +878,22 @@ export function showResult(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
       value: FormatSTC(33),
       condition: taxtype==40,
     },
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
     // parent.taxtype==42
     // Married - joint taxation 2
     // 根 據 你 輸 入 的 資 料 ， 你 和 你 配 偶 選 擇 合 併 評 税 會 較 為 有 利 。 
@@ -1022,11 +1018,11 @@ export function showResult(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
       value: FormatSTC(21),
       condition: taxtype==42 && YrEnd > 2005,
     },
-
-
-
-
-
+  
+  
+  
+  
+  
     "免 税 額：－ 並 非 全 年 與 你 同 住 的 - 供 養 父 母 / 祖 父 母 或 外 祖 父 母 - 年 齡 為 55 至 59 歲  (Married - joint taxation 2 - SELF)": {
       value: 0,
       condition: taxtype==42 && YrEnd > 2005,
@@ -1051,9 +1047,9 @@ export function showResult(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
       value: FormatSTC(22),
       condition: taxtype==42 && YrEnd > 2005,
     },
-
-
-
+  
+  
+  
     "免 税 額：－ 全 年 與 你 同 住 的 - 供 養 父 母 / 祖 父 母 或 外 祖 父 母 (稅務年度2005年前) (Married - joint taxation 2 - SELF)": {
       value: 0,
       condition: taxtype==42 && YrEnd <= 2005,
@@ -1078,7 +1074,7 @@ export function showResult(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
       value: FormatSTC(22),
       condition: taxtype==42 && YrEnd <= 2005,
     },
-
+  
     "免 税 額：－ 傷 殘 受 養 人 (Married - joint taxation 2 - SELF)": {
       value: 0,
       condition: taxtype==42,
@@ -1149,19 +1145,19 @@ export function showResult(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
       condition: taxtype==42,
     },
     
-
-
-
-
-
-
-
-
-
-
-
-
-
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
     // parent.taxtype==45
     // Married - JAD, separate taxation
     // 根 據 你 輸 入 的 資 料 ， 你 和 你 配 偶 選 擇 合 併 評 税 會 較 為 有 利 。 
@@ -1287,11 +1283,11 @@ export function showResult(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
       value: FormatSTC(21),
       condition: taxtype==45 && YrEnd > 2005,
     },
-
-
-
-
-
+  
+  
+  
+  
+  
     "免 税 額：－ 並 非 全 年 與 你 同 住 的 - 供 養 父 母 / 祖 父 母 或 外 祖 父 母 - 年 齡 為 55 至 59 歲  (Married - JAD, separate taxation - SELF)": {
       value: 0,
       condition: taxtype==45 && YrEnd > 2005,
@@ -1316,9 +1312,9 @@ export function showResult(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
       value: FormatSTC(22),
       condition: taxtype==45 && YrEnd > 2005,
     },
-
-
-
+  
+  
+  
     "免 税 額：－ 全 年 與 你 同 住 的 - 供 養 父 母 / 祖 父 母 或 外 祖 父 母 (稅務年度2005年前) (Married - JAD, separate taxation - SELF)": {
       value: 0,
       condition: taxtype==45 && YrEnd <= 2005,
@@ -1343,7 +1339,7 @@ export function showResult(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
       value: FormatSTC(22),
       condition: taxtype==45 && YrEnd <= 2005,
     },
-
+  
     "免 税 額：－ 傷 殘 受 養 人 (Married - JAD, separate taxation - SELF)": {
       value: 0,
       condition: taxtype==45,
@@ -1414,35 +1410,54 @@ export function showResult(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
       condition: taxtype==45,
     },
     
-
-
-
-
-
-
-
-
-
+  
+  
+  
+  
+  
+  
+  
+  
+  
     "xxxxxxx (single income family)": {
       value: FormatSTC(99999999),
       condition: false,
     },
   };
+}
 
-  const out = Object.keys(a).filter((k) => {
-    return a[k].condition
+export function resultCore(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
+  var slfRebateAmt=CalculateRebate(STCOut[30], YrEnd);
+
+  const taxMapping = calResult(taxtype, STCOut, YrEnd, hasTaxRebate, isMarried);
+  const out = Object.keys(taxMapping).filter((k) => {
+    return taxMapping[k].condition
   })
-  .filter((k) => {
+
+  const mapped = out.map((key, idx) => {
+    return ({
+      [key.replaceAll(" ", "").split("(")[0]]: FormatMoney(taxMapping[key].value)
+    })
+  });
+  
+  return { out, mapped };
+}
+
+export function showResult(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
+  parent.STCOut = STCOut;
+
+  const taxMapping = calResult(taxtype, STCOut, YrEnd, hasTaxRebate, isMarried);
+  const {out: result} = resultCore(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried);
+  const out = result.filter((k) => {
     // return true;
     return -1 !== k.indexOf("你 及 你 配 偶 應 繳 的 總 税 款") || -1 !== k.indexOf("你 應 繳 的 總 税 款")
   });
-
 
   return out.map((key, idx) => {
     return <p key={idx}>
       {key.replaceAll(" ", "").split("(")[0]}
       {": $"}
-      {FormatMoney(a[key].value)}
+      {FormatMoney(taxMapping[key].value)}
     </p>
   });
 }

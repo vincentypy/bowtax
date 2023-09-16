@@ -9,7 +9,7 @@
 
   display: inline;
   line-height: 1;
-  vertical-align: -50%;
+  /* vertical-align: -6px; */
 }
 
 .btx-tooltip-clickable {

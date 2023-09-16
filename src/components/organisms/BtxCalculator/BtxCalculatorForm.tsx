@@ -49,11 +49,18 @@ function sumDeduct(props: any) {
 
 const BtxStepLabel = styled(StepLabel)`
   svg.Mui-active {
-    color: var(--secondary-brand-100);
+    color: var(--progress-color);
   }
 
   svg.Mui-completed {
     color: var(--secondary-brand-100);
+  }
+
+  .Mui-disabled svg.MuiStepIcon-root {
+    color: var(--pending-color);
+    .MuiStepIcon-text {
+      fill: rgba(0, 0, 0, 0.6)
+    }
   }
 `;
 
@@ -420,6 +427,38 @@ export const BtxCalculatorForm = ({
             onChange={langSelector}
           /> */}
 
+          <BtxLabel label="">婚姻狀況</BtxLabel>
+          <BtxSwitch
+            label="Married"
+            label1={t("isSingle")}
+            label2={t("isMarried")}
+            value={isMarried}
+            onChange={(e) => {
+              const nextStatusIsMarried = !isMarried;
+              performToggleMarriage(nextStatusIsMarried);
+              setIsMarried((val) => !val);
+              doChecking(0);
+              if (!nextStatusIsMarried) {		// Single ?
+                dF.T2.value="0"
+                dF.T14.value="0"
+                dF.D15.selectedIndex=0
+                dF.D15b.selectedIndex=0
+                setSpouseIncome(-99999999999);
+                setSpouseResidence(-99999999999);
+                setSpouseDisabledDependent(false);
+                setSpousePDA(false);
+                console.debug(`[TODO] Should update state BtxCalculatorForm:L369`);
+              }
+              if (nextStatusIsMarried) {		// Married ?
+                dF.D22.selectedIndex=0
+                console.debug(`[TODO] Should update state BtxCalculatorForm:L373`);
+              }
+            }}
+          />
+
+          <br />
+
+
           <Stepper activeStep={activeStep} orientation="vertical">
             <Step key={0}>
               <BtxStepLabel onClick={handleStep(0)}>{t("Income")}</BtxStepLabel>
@@ -428,37 +467,15 @@ export const BtxCalculatorForm = ({
                   <BtxHeading label={t("Income")} />
                   <br />
 
-                  <BtxLabel label="">婚姻狀況</BtxLabel>
-                  <BtxSwitch
-                    label="Married"
-                    label1={t("isSingle")}
-                    label2={t("isMarried")}
-                    value={isMarried}
-                    onChange={(e) => {
-                      const nextStatusIsMarried = !isMarried;
-                      performToggleMarriage(nextStatusIsMarried);
-                      setIsMarried((val) => !val);
-                      doChecking(0);
-                      if (!nextStatusIsMarried) {		// Single ?
-                        dF.T2.value="0"
-                        dF.T14.value="0"
-                        dF.D15.selectedIndex=0
-                        dF.D15b.selectedIndex=0
-                        setSpouseIncome(-99999999999);
-                        setSpouseResidence(-99999999999);
-                        setSpouseDisabledDependent(false);
-                        setSpousePDA(false);
-                        console.debug(`[TODO] Should update state BtxCalculatorForm:L369`);
-                      }
-                      if (nextStatusIsMarried) {		// Married ?
-                        dF.D22.selectedIndex=0
-                        console.debug(`[TODO] Should update state BtxCalculatorForm:L373`);
-                      }
-                    }}
-                  />
-
-                  <br />
-                  <BtxLabel label="">個人課稅年度收入息</BtxLabel>
+                  <BtxLabel label="">
+                    個人課稅年度收入息
+                    <BtxTooltip id={"hintIncome"} label={null} place={"top-start"}>
+                      <p className={"btx-tooltip-content"}>
+                        {t("hintIncome")}
+                        <a href="https://www.gov.hk/tc/residents/taxes/salaries/salariestax/chargeable/index.htm" target="_blank">（詳情）</a>
+                      </p>
+                    </BtxTooltip>
+                  </BtxLabel>
                   <BtxFormInputNumber
                     label="selfIncome"
                     min={0}
@@ -486,7 +503,15 @@ export const BtxCalculatorForm = ({
 
 
                   
-                  <BtxLabel label="">{t("selfResidence")}</BtxLabel>
+                  <BtxLabel label="">
+                    {t("selfResidence")}
+                    <BtxTooltip id={"hintResidence"} label={null} place={"top-start"}>
+                      <p className={"btx-tooltip-content"}>
+                        {t("hintResidence")}
+                        <a href="https://www.gov.hk/tc/residents/taxes/salaries/salariestax/chargeable/residence.htm" target="_blank">（詳情）</a>
+                      </p>
+                    </BtxTooltip>
+                  </BtxLabel>
                   <BtxFormInputNumber
                     label="selfResidence"
                     min={0}
@@ -914,7 +939,15 @@ export const BtxCalculatorForm = ({
                     </BtxRow>
 
                     <BtxRow label="">
-                      <BtxLabel label="">{t("selfDisabledDependant")}</BtxLabel>
+                      <BtxLabel label="">
+                        {t("selfDisabledDependant")}
+                        <BtxTooltip id={"hintDisabledDependant-3"} label={null} place={"top-start"}>
+                          <p className={"btx-tooltip-content"}>
+                            {t("hintDisabledDependant")}
+                            <a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#dda" target="_blank">（詳情）</a>
+                          </p>
+                        </BtxTooltip>
+                      </BtxLabel>
                       <BtxFormInputNumber
                         label="selfDisabledDependant"
                         min={0}
@@ -1229,7 +1262,15 @@ export const BtxCalculatorForm = ({
                   <br />
 
                   <BtxRow label="">
-                    <BtxLabel label="">{t("selfPDA")}</BtxLabel>
+                    <BtxLabel label="">
+                      {t("selfPDA")}
+                      <BtxTooltip id={"hintPDA"} label={null} place={"top-start"}>
+                        <p className={"btx-tooltip-content"}>
+                          {t("hintPDA")}
+                          <a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#pda" target="_blank">（詳情）</a>
+                        </p>
+                      </BtxTooltip>
+                    </BtxLabel>
                     <BtxSwitch label="Switch" value={selfPDA} onChange={(e, checked) => {
                         dF.D15a.selectedIndex = checked ? 1 : 0;
                         setSelfPDA(checked);
@@ -1239,7 +1280,15 @@ export const BtxCalculatorForm = ({
                   </BtxRow>
                   {isMarried && (
                     <BtxRow label="">
-                      <BtxLabel label="">{t("spousePDA")}</BtxLabel>
+                      <BtxLabel label="">
+                        {t("spousePDA")}
+                        <BtxTooltip id={"hintPDA"} label={null} place={"top-start"}>
+                          <p className={"btx-tooltip-content"}>
+                            {t("hintPDA")}
+                            <a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#pda" target="_blank">（詳情）</a>
+                          </p>
+                        </BtxTooltip>
+                      </BtxLabel>
                       <BtxSwitch label="Switch" value={spousePDA} onChange={(e, checked) => {
                           dF.D15b.selectedIndex = checked ? 1 : 0;
                           setSpousePDA(checked);
@@ -1261,7 +1310,7 @@ export const BtxCalculatorForm = ({
                   {!isMarried && (<>
                     <br />
                     <BtxLabel label="" level="section">
-                    單親家庭免稅額
+                      單親家庭免稅額
                     </BtxLabel>
                     <br />
   
@@ -1350,6 +1399,12 @@ export const BtxCalculatorForm = ({
                   <BtxLabel label="" level="section">
                     供養子女免稅額
                     {/* {t("sectionChildren")} */}
+                    <BtxTooltip id={"hintChild"} label={null} place={"top-start"}>
+                      <p className={"btx-tooltip-content"}>
+                        {t("hintChild")}
+                        <a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#ca" target="_blank">（詳情）</a>
+                      </p>
+                    </BtxTooltip>
                   </BtxLabel>
                   <br />
 
@@ -1378,7 +1433,15 @@ export const BtxCalculatorForm = ({
                     </BtxRow>
 
                     <BtxRow label="">
-                      <BtxLabel label="">{t("disabledChildBornThisYr")}</BtxLabel>
+                      <BtxLabel label="">
+                        {t("disabledChildBornThisYr")}
+                        <BtxTooltip id={"hintDisabledDependant-4"} label={null} place={"top-start"}>
+                          <p className={"btx-tooltip-content"}>
+                            {t("hintDisabledDependant")}
+                            <a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#dda" target="_blank">（詳情）</a>
+                          </p>
+                        </BtxTooltip>
+                      </BtxLabel>
                       <BtxFormInputNumber
                         label="disabledChildBornThisYr"
                         min={0}
@@ -1421,7 +1484,15 @@ export const BtxCalculatorForm = ({
                     </BtxRow>
 
                     <BtxRow label="">
-                      <BtxLabel label="">{t("disabledChildBornOtherYr")}</BtxLabel>
+                      <BtxLabel label="">
+                        {t("disabledChildBornOtherYr")}
+                        <BtxTooltip id={"hintDisabledDependant-5"} label={null} place={"top-start"}>
+                          <p className={"btx-tooltip-content"}>
+                            {t("hintDisabledDependant")}
+                            <a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#dda" target="_blank">（詳情）</a>
+                          </p>
+                        </BtxTooltip>
+                      </BtxLabel>
                       <BtxFormInputNumber
                         label="disabledChildBornOtherYr"
                         min={0}
@@ -1471,7 +1542,15 @@ export const BtxCalculatorForm = ({
                     </BtxLabel>
 
                     <BtxRow label="">
-                      <BtxLabel label="">{t("dependentparentsResided")}</BtxLabel>
+                      <BtxLabel label="">
+                        {t("dependentparentsResided")}
+                        <BtxTooltip id={"hintParent60-1"} label={null} place={"top-start"}>
+                          <p className={"btx-tooltip-content"}>
+                            {t("hintParent60")}
+                            <a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#dpa" target="_blank">（詳情）</a>
+                          </p>
+                        </BtxTooltip>
+                      </BtxLabel>
                       <BtxFormInputNumber
                         label="dependentparentsResided"
                         min={0}
@@ -1490,7 +1569,15 @@ export const BtxCalculatorForm = ({
                     </BtxRow>
 
                     <BtxRow label="">
-                      <BtxLabel label="">{t("disabledDependentparentsResided")}</BtxLabel>
+                      <BtxLabel label="">
+                        {t("disabledDependentparentsResided")}
+                        <BtxTooltip id={"hintDisabledDependant-1"} label={null} place={"top-start"}>
+                          <p className={"btx-tooltip-content"}>
+                            {t("hintDisabledDependant")}
+                            <a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#dda" target="_blank">（詳情）</a>
+                          </p>
+                        </BtxTooltip>
+                      </BtxLabel>
                       <BtxFormInputNumber
                         label="disabledDependentparentsResided"
                         min={0}
@@ -1509,7 +1596,15 @@ export const BtxCalculatorForm = ({
                     </BtxRow>
 
                     <BtxRow label="">
-                      <BtxLabel label="">{t("dependentparentsNotResided")}</BtxLabel>
+                      <BtxLabel label="">
+                        {t("dependentparentsNotResided")}
+                        <BtxTooltip id={"hintParent60-2"} label={null} place={"top-start"}>
+                          <p className={"btx-tooltip-content"}>
+                            {t("hintParent60")}
+                            <a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#dpa" target="_blank">（詳情）</a>
+                          </p>
+                        </BtxTooltip>
+                      </BtxLabel>
                       <BtxFormInputNumber
                         label="dependentparentsNotResided"
                         min={0}
@@ -1528,7 +1623,15 @@ export const BtxCalculatorForm = ({
                     </BtxRow>
 
                     <BtxRow label="">
-                      <BtxLabel label="">{t("disabledDependentparentsNotResided")}</BtxLabel>
+                      <BtxLabel label="">
+                        {t("disabledDependentparentsNotResided")}
+                        <BtxTooltip id={"hintDisabledDependant-2"} label={null} place={"top-start"}>
+                          <p className={"btx-tooltip-content"}>
+                            {t("hintDisabledDependant")}
+                            <a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#dda" target="_blank">（詳情）</a>
+                          </p>
+                        </BtxTooltip>
+                      </BtxLabel>
                       <BtxFormInputNumber
                         label="disabledDependentparentsNotResided"
                         min={0}
@@ -1550,7 +1653,15 @@ export const BtxCalculatorForm = ({
                       {t("subsectionParents5560")}
                     </BtxLabel>
                     <BtxRow label="">
-                      <BtxLabel label="">{t("dependentparents5560Resided")}</BtxLabel>
+                      <BtxLabel label="">
+                        {t("dependentparents5560Resided")}
+                        <BtxTooltip id={"hintParent60-3"} label={null} place={"top-start"}>
+                          <p className={"btx-tooltip-content"}>
+                            {t("hintParent60")}
+                            <a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#dpa" target="_blank">（詳情）</a>
+                          </p>
+                        </BtxTooltip>
+                      </BtxLabel>
                       <BtxFormInputNumber
                         label="dependentparents5560Resided"
                         min={0}
@@ -1561,7 +1672,15 @@ export const BtxCalculatorForm = ({
                       />
                     </BtxRow>
                     <BtxRow label="">
-                      <BtxLabel label="">{t("dependentparents5560NotResided")}</BtxLabel>
+                      <BtxLabel label="">
+                        {t("dependentparents5560NotResided")}
+                        <BtxTooltip id={"hintParent60-4"} label={null} place={"top-start"}>
+                          <p className={"btx-tooltip-content"}>
+                            {t("hintParent60")}
+                            <a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#dpa" target="_blank">（詳情）</a>
+                          </p>
+                        </BtxTooltip>
+                      </BtxLabel>
                       <BtxFormInputNumber
                         label="dependentparents5560NotResided"
                         min={0}
@@ -1592,7 +1711,15 @@ export const BtxCalculatorForm = ({
 
                   <>
                     <BtxRow label="">
-                      <BtxLabel label="">{t("dependentBrothersSis")}</BtxLabel>
+                      <BtxLabel label="">
+                        {t("dependentBrothersSis")}
+                        <BtxTooltip id={"hintBrothersSis"} label={null} place={"top-start"}>
+                          <p className={"btx-tooltip-content"}>
+                            {t("hintBrothersSis")}
+                            <a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#dbsa" target="_blank">（詳情）</a>
+                          </p>
+                        </BtxTooltip>
+                      </BtxLabel>
                       <BtxFormInputNumber
                         label="dependentBrothersSis"
                         min={0}
@@ -1611,7 +1738,15 @@ export const BtxCalculatorForm = ({
                     </BtxRow>
 
                     <BtxRow label="">
-                      <BtxLabel label="">{t("disabledDependentBrothersSis")}</BtxLabel>
+                      <BtxLabel label="">
+                        {t("disabledDependentBrothersSis")}
+                        <BtxTooltip id={"hintDisabledDependant-6"} label={null} place={"top-start"}>
+                          <p className={"btx-tooltip-content"}>
+                            {t("hintDisabledDependant")}
+                            <a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#dda" target="_blank">（詳情）</a>
+                          </p>
+                        </BtxTooltip>
+                      </BtxLabel>
                       <BtxFormInputNumber
                         label="disabledDependentBrothersSis"
                         min={0}
@@ -1639,7 +1774,15 @@ export const BtxCalculatorForm = ({
                       <br />
 
                       <BtxRow label="">
-                        <BtxLabel label="">{t("spouseDisabledDependent")}</BtxLabel>
+                        <BtxLabel label="">
+                          {t("spouseDisabledDependent")}
+                          <BtxTooltip id={"hintDisabledDependant-7"} label={null} place={"top-start"}>
+                            <p className={"btx-tooltip-content"}>
+                              {t("hintDisabledDependant")}
+                              <a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#dda" target="_blank">（詳情）</a>
+                            </p>
+                          </BtxTooltip>
+                        </BtxLabel>
                         <BtxSwitch label="Switch" value={spouseDisabledDependent} onChange={(e, checked) => {
                             dF.D15.selectedIndex = checked ? 1 : 0;
                             setSpouseDisabledDependent(checked);

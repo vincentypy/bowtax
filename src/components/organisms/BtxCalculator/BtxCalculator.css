@@ -23,6 +23,9 @@
 .btx-tooltip-content {
   max-width: 300px;
   line-height: 1.3;
+  a {
+    text-decoration: underline;
+  }
 }
 
 .deduct-title {

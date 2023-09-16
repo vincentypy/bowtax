@@ -15,7 +15,9 @@ import StepContent from "@mui/material/StepContent";
 
 import { RawHTML } from "../../hkird";
 import { BtxCalculatorOut } from "./BtxCalculatorOut";
+import { resultCore } from "./Mapping";
 
+(window as any).BASEURL = (window as any).BASEURL || "https://www.bowtie.com.hk/blog/wp-json/contact-form-7/v1/contact-forms/%3CFORM_ID%3E/feedback";
 
 const BtxStepLabel = styled(StepLabel)`
   svg.Mui-active {
@@ -106,10 +108,36 @@ export const BtxCalculator = ({
   }, []);
 
 
-  const sumbitData = useCallback((data: any) => {
+  const submitData = useCallback((data: any) => {
     const filteredData = Object.fromEntries(Object.entries(data).filter(([key]) => !key.startsWith('set')));
-    console.log(`sumbitData: `, filteredData)
-  }, []);
+    console.log(`submitData: `, filteredData);
+
+    const formData = new FormData();
+    Object.keys(filteredData).map((key: string) => {
+      formData.append(key, `${filteredData[key] === -99999999999 ? 0 : filteredData[key]}`);
+    });
+
+    setTimeout(async function () {
+      const {mapped} = resultCore(sOut, (window as any).STCMainRV, (window as any).YrEnd, false, sOut.length !== 0 && isMarried);
+
+      formData.append('result', JSON.stringify(mapped));
+
+      try {
+        const response = await fetch((window as any).BASEURL, {
+          method: "POST",
+          headers: {
+            // "Content-Type": "application/json",
+            // 'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: formData,
+        });
+
+        console.log(`submitData result: ${JSON.stringify(await response.json())}`);
+      } catch (err) {
+        console.log(`[Error] submitData: ${JSON.stringify(err)}`);
+      }
+    }, 2000);
+  }, [sOut]);
 
 
 
@@ -133,7 +161,7 @@ export const BtxCalculator = ({
             sOut={sOut}
             setSOut={setSOut}
             setIsMarried={setIsMarried}
-            sumbitData={sumbitData}
+            submitData={submitData}
           />
         </UserInputContextProvider>
       </div>
