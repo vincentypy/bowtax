@@ -28,7 +28,7 @@ import { BtxTooltip } from "../../atoms/BtxTooltip/BtxTooltip";
 function sumDeduct(props: any) {
   let sum = 0;
   Object.keys(props).map((key, idx) => {
-    console.log(`${key} => ${props[key]} `);
+    // console.log(`${key} => ${props[key]} `);
     const trimmedStr = `${props[key]}`.replace(",", "");
     if (trimmedStr === "-99999999999") {
       return
