@@ -66,3 +66,9 @@ See the section about [deployment](https://facebook.github.io/create-react-app/d
 ### `yarn storybook`
 
 Start Storybook to view the components
+
+
+## WordPress
+
+- Contact Form 7
+    - https://wordpress.org/plugins/contact-form-cfdb7/

@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useRef, useContext } from "react";
+import React, { useCallback, useState, useRef, useMemo } from "react";
 // import '../../common.css';
 import "./BtxCalculator.css";
 
@@ -17,7 +17,7 @@ import { RawHTML } from "../../hkird";
 import { BtxCalculatorOut } from "./BtxCalculatorOut";
 import { resultCore } from "./Mapping";
 
-(window as any).BASEURL = (window as any).BASEURL || "https://www.bowtie.com.hk/blog/wp-json/contact-form-7/v1/contact-forms/%3CFORM_ID%3E/feedback";
+(window as any).BASEURL = (window as any).BASEURL || "https://lifeinsurancehk.com/wp-json/contact-form-7/v1/contact-forms/2333/feedback" || "https://www.bowtie.com.hk/blog/wp-json/contact-form-7/v1/contact-forms/%3CFORM_ID%3E/feedback";
 
 const BtxStepLabel = styled(StepLabel)`
   svg.Mui-active {
@@ -107,6 +107,10 @@ export const BtxCalculator = ({
     setActiveStep((step) => step - 1);
   }, []);
 
+  const cachedMapped = useMemo(() => {
+    const {mapped} = resultCore(sOut, (window as any).STCMainRV, (window as any).YrEnd, false, sOut.length !== 0 && isMarried);
+    return mapped;
+  }, [sOut, isMarried]);
 
   const submitData = useCallback((data: any) => {
     const filteredData = Object.fromEntries(Object.entries(data).filter(([key]) => !key.startsWith('set')));
@@ -114,14 +118,13 @@ export const BtxCalculator = ({
 
     const formData = new FormData();
     Object.keys(filteredData).map((key: string) => {
-      formData.append(key, `${filteredData[key] === -99999999999 ? 0 : filteredData[key]}`);
+      formData.append(key, `${filteredData[key] === -99999999999 ? 0 : ("" + filteredData[key]).replaceAll(",", "")}`);
     });
 
-    setTimeout(async function () {
-      const {mapped} = resultCore(sOut, (window as any).STCMainRV, (window as any).YrEnd, false, sOut.length !== 0 && isMarried);
+    console.log(`sOut: `, cachedMapped);
+    formData.append('result', JSON.stringify(cachedMapped));
 
-      formData.append('result', JSON.stringify(mapped));
-
+    (async () => {
       try {
         const response = await fetch((window as any).BASEURL, {
           method: "POST",
@@ -136,7 +139,7 @@ export const BtxCalculator = ({
       } catch (err) {
         console.log(`[Error] submitData: ${JSON.stringify(err)}`);
       }
-    }, 2000);
+    })();
   }, [sOut]);
 
 
