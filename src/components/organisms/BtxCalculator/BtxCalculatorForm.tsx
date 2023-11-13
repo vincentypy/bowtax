@@ -62,6 +62,10 @@ const BtxStepLabel = styled(StepLabel)`
       fill: rgba(0, 0, 0, 0.6)
     }
   }
+
+  .MuiStepLabel-label {
+    color: var(--text-color-primary);
+  }
 `;
 
 const BtxSelfSpouseHeader = ({t, isMarried}: any) => {

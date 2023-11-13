@@ -13,7 +13,7 @@
 }
 
 .btx-card--secondary {
-  color: #333;
+  color: var(--text-color-primary);
   background-color: transparent;
   box-shadow: rgba(0, 0, 0, 0.15) 0 0 0 1px inset;
 }
