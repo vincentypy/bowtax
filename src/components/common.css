@@ -32,7 +32,7 @@ html {
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --text-color-primary: #FFF;
-    --background-color: #343434;
+    --x-text-color-primary: #FFF;
+    --x-background-color: #343434;
   }
 }
