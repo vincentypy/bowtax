@@ -1,8 +1,8 @@
 {
-  "name": "cra_template",
-  "version": "0.0.1",
+  "name": "tax_calculator",
+  "version": "1.0.0",
   "private": true,
-  "homepage": ".",
+  "homepage": "https://vincentypy.github.io/bowtax",
   "scripts": {
     "start": "craco start",
     "build": "craco build",
@@ -16,7 +16,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "ci": "yarn format:check && yarn lint:script && yarn lint:style && yarn typecheck && yarn coverage",
     "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook"
+    "build-storybook": "build-storybook",
+    "predeploy": "yarn build",
+    "deploy": "gh-pages -d build"
   },
   "dependencies": {
     "@craco/craco": "^6.3.0",
@@ -63,6 +65,7 @@
     "eslint-plugin-react": "7.19.0",
     "eslint-plugin-react-hooks": "2.5.0",
     "eslint-plugin-tsdoc": "0.2.4",
+    "gh-pages": "^6.3.0",
     "nyc": "15.1.0",
     "prettier": "2.8.8",
     "prop-types": "^15.8.1",
