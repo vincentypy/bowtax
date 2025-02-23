@@ -67,6 +67,10 @@ See the section about [deployment](https://facebook.github.io/create-react-app/d
 
 Start Storybook to view the components
 
+### `yarn deploy`
+
+Deploy to Github Pages
+
 
 ## WordPress
 
