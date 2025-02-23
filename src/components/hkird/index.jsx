@@ -2084,6 +2084,8 @@ var TAX_RANGE, TAX_RATE, TAX_RATE_R, TAX
   for (i=0; i<16; i++) { TAX[i]=0 }
   TAX_RATE_R=0
 var STD_RATE=0
+var STD_RATE_P=0
+var STD_PREMIUM=5000000
 var CLAWBACK=false
 var CLAW_RATE=0
 var VAPRP_RATE=0
@@ -2114,7 +2116,7 @@ function CalculateTaxWithDelay() {
 function CalculateTax() {
   var obj,slfSEE,spsSEE,v, jntSEE
   var slfOE, spsOE, jntOE, slfERCE, spsERCE
-  STCIn0=YrValue="2023-2024"			//String (Assessment year  e.g. "1996-1997")
+  STCIn0=YrValue="2024-2025"			//String (Assessment year  e.g. "1996-1997")
   obj = [{checked: !window.isMarried, value: 'S'}, {checked: window.isMarried, value: 'M'}];
   inputRef.current.D2 = [{checked: !window.isMarried, value: 'S'}, {checked: window.isMarried, value: 'M'}];
   if (obj[0].checked) {
@@ -2219,6 +2221,7 @@ function CalculateTax() {
   Restarting=false
   i=STCMain()
 } // End CalculateTax()
+
 function CalculateRebate(tax, YrEnd) {
   var rebateAmt
   rebateAmt=0
@@ -2230,6 +2233,7 @@ function CalculateRebate(tax, YrEnd) {
   }
   return rebateAmt
 }
+
 function CompTP(StdTP,NCI) {
   var PrgTP
   var i
@@ -2251,7 +2255,7 @@ function CompTP(StdTP,NCI) {
 }
 function GetRate(AssessYear) {
   var i, ok=false
-  if (AssessYear=="2023-2024") {
+  if (AssessYear=="2024-2025") {
       AL_SING=132000		//PAL_SING
       AAL_SING=0		//PAAL_SING
       AL_MARR=264000		//PAL_MARR
@@ -2298,6 +2302,7 @@ function GetRate(AssessYear) {
       TAX[10]=0; TAX[11]=0; TAX[12]=0
       TAX[13]=0; TAX[14]=0; TAX[15]=0
       STD_RATE=15		//PSTANDRATE
+      STD_RATE_P=16 //PSTANDRATE premium
       CLAWBACK=false		//PCLAWBACK
       CLAW_RATE=0		//PCLAWRATE
       ok=true
@@ -2324,25 +2329,25 @@ function GetRate(AssessYear) {
   return true
 }
 function GetYrofAss() {
-YrValue="2023-2024"
+YrValue="2024-2025"
 YrofAss=parseInt(rightStr(YrValue,4),10)-1+"/"+rightStr(YrValue,2)
 return YrofAss
 }
 function GetDeduction() {
-  YrValue="2023-2024"
+  YrValue="2024-2025"
   YrEnd=parseInt(rightStr(YrValue,4),10)
   parent.LSPYrEnd = YrValue
-  if (YrValue=="2023-2024") {
+  if (YrValue=="2024-2025") {
     LimD_DonaLL=100
     LimD_DonaUL=35
     LimD_Education=100000
-    LimD_HomeLoan=100000
+    LimD_HomeLoan=120000
     LimD_Elderly=100000
     LimD_MPF=18000
     LimD_rate_MPF=5
     LimP_rate_VAPRP=10
 LimD_VTC=60000
-LimD_RD=100000
+LimD_RD=120000
 LimD_VHIS=8000
 
     return true
@@ -2405,9 +2410,19 @@ function STCMain() {
     STCOut[59]=STCIn16
     STCOut[78]=CDbl(dF.T9.value)
     STCOut[79]=CDbl(dF.T10.value)
-    slfStdTP=netSelfI*STD_RATE/100		//self TP at standard rate
-    spsStdTP=netSpouseI*STD_RATE/100		//spouse TP at standard rate
-    jointStdTP=netJointI*STD_RATE/100		//joint TP at standard rate
+
+    slfStdTP = (netSelfI > STD_PREMIUM) 
+      ? (STD_PREMIUM * STD_RATE + (netSelfI - STD_PREMIUM) * STD_RATE_P) / 100 
+      : netSelfI * STD_RATE / 100;
+
+    spsStdTP = (netSpouseI > STD_PREMIUM) 
+      ? (STD_PREMIUM * STD_RATE + (netSpouseI - STD_PREMIUM) * STD_RATE_P) / 100 
+      : netSpouseI * STD_RATE / 100;
+
+    jointStdTP = (netJointI > STD_PREMIUM) 
+      ? (STD_PREMIUM * STD_RATE + (netJointI - STD_PREMIUM) * STD_RATE_P) / 100 
+      : netJointI * STD_RATE / 100; // joint TP
+
     if (CLAWBACK) {
       AASing=AAL_SING-(netSelfI-AL_SING-AAL_SING)*CLAW_RATE/100
       if (AASing<0) AASing=0
@@ -3189,8 +3204,13 @@ function STCMain() {
     		    if (netSelfI<0) netSelfI=0
     		    netSpouseI=STCIn3-STCIn15-STCOut[78]
     		    if (netSpouseI<0) netSpouseI=0
-    		    slfStdTP=netSelfI*STD_RATE/100		//self TP at standard rate
-    		    spsStdTP=netSpouseI*STD_RATE/100		//spouse TP at standard rate
+            slfStdTP = (netSelfI > STD_PREMIUM) 
+              ? (STD_PREMIUM * STD_RATE + (netSelfI - STD_PREMIUM) * STD_RATE_P) / 100 
+              : netSelfI * STD_RATE / 100;
+
+            spsStdTP = (netSpouseI > STD_PREMIUM) 
+              ? (STD_PREMIUM * STD_RATE + (netSpouseI - STD_PREMIUM) * STD_RATE_P) / 100 
+              : netSpouseI * STD_RATE / 100;
     		}
     		STCOut[30]=Math.floor(CompTP(slfStdTP,STCOut[27]))
     		STCOut[34]=StdFlag
@@ -3384,7 +3404,7 @@ function detailinfo() {
 <script type="text/javascript">
 	document.write("<b>"+GetYrofAss()+"</b>")
 </script>
-    <input  type="hidden" name="D1" ref={ref => {inputRef.current["D1"] = ref; }} value="2023-2024" />
+    <input type="hidden" name="D1" ref={ref => {inputRef.current["D1"] = ref; }} value="2024-2025" />
     </td>
     <td width="14%">&nbsp</td>
   </tr>
@@ -3561,7 +3581,7 @@ function detailinfo() {
   </tr>
   <tr>
     <td width="50%"><a href="https://www.gov.hk/tc/residents/taxes/salaries/allowances/allowances/allowances.htm#ca" target="_blank"><em>供 養 子 女</em></a>  數 目</td>
-</tr>{ (HasNBCA('2023-2024')) && (<><tr><td width="25%" align="center"></td>
+</tr>{ (HasNBCA('2024-2025')) && (<><tr><td width="25%" align="center"></td>
     	<td width="25%" align="center"></td>
   		</tr><tr>
     	<td width="50%">-&nbsp;&nbsp;&nbsp;&nbsp;在 課 税 年 度 內 出 生</td>
