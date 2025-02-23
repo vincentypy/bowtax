@@ -1446,18 +1446,31 @@ export function resultCore(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
 export function showResult(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
   parent.STCOut = STCOut;
 
+  const refund = 3000;
+
   const taxMapping = calResult(taxtype, STCOut, YrEnd, hasTaxRebate, isMarried);
   const {out: result} = resultCore(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried);
   const out = result.filter((k) => {
-    // return true;
     return -1 !== k.indexOf("你 及 你 配 偶 應 繳 的 總 税 款") || -1 !== k.indexOf("你 應 繳 的 總 税 款")
   });
 
   return out.map((key, idx) => {
-    return <p key={idx}>
-      {key.replaceAll(" ", "").split("(")[0]}
-      {": $"}
-      {FormatMoney(taxMapping[key].value)}
-    </p>
+    return <div>
+      <p key={idx}>
+        {key.replaceAll(" ", "").split("(")[0]}
+        {": $"}
+        {FormatMoney(taxMapping[key].value)}
+      </p>
+      <p key={"refund"}>
+        獲退稅 
+        {": $"}
+        {FormatMoney(refund)}
+      </p>
+      <p key={"actual"}>
+        實際應繳稅款
+        {": $"}
+        {FormatMoney(Math.max(0, taxMapping[key].value - refund))}
+      </p>
+    </div>
   });
 }

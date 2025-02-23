@@ -103,7 +103,7 @@ export const BtxCalculatorOut = ({
           <BtxHeading label={t("Results")} />
 
           <pre>
-            23/24 （課稅年度）
+            24/25 （課稅年度）
             {/* <br />
             你原要交： {resultTax}元<br />
             獲退稅*： {refundTax}元<br />

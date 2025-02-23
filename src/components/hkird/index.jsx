@@ -2346,10 +2346,9 @@ function GetDeduction() {
     LimD_MPF=18000
     LimD_rate_MPF=5
     LimP_rate_VAPRP=10
-LimD_VTC=60000
-LimD_RD=120000
-LimD_VHIS=8000
-
+    LimD_VTC=60000
+    LimD_RD=120000
+    LimD_VHIS=8000
     return true
   }
   return false
