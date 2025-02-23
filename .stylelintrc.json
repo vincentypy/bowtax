@@ -1,0 +1,24 @@
+{
+  "extends": ["stylelint-config-standard", "stylelint-config-prettier", "stylelint-config-standard-scss"],
+  "plugins": [
+    "stylelint-no-unsupported-browser-features"
+  ],
+  "defaultSeverity": "warning",
+  "rules": {
+    "scss/at-rule-no-unknown": [true, {
+      "ignoreAtRules": ["mixin", "include", "content", "if", "else", "function", "error", "return", "tailwind"]
+    }],
+    "plugin/no-unsupported-browser-features": [true, {
+      "ignore": ["viewport-units", "flexbox", "css3-cursors", "outline", "background-img-opts", "css-resize", "css-gradients", "css-appearance", "intrinsic-width", "object-fit", "css3-cursors-newer", "user-select-none", "word-break", "css-unset-value", "calc", "css-sticky"]
+    }],
+    "property-no-unknown": [true, {
+      "ignoreProperties": ["composes", "aspect-ratio"]
+    }],
+    "selector-type-no-unknown": [true, { "ignoreTypes": ["last-child"] }],
+    "selector-class-pattern": null,
+    "color-function-notation": null,
+    "alpha-value-notation": null,
+    "value-list-comma-newline-after": null,
+    "declaration-colon-newline-after": null
+  }
+}

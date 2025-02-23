@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/bowtax/static/css/main.c75f0587.css",
+    "main.js": "/bowtax/static/js/main.5cbf3765.js",
+    "static/js/787.b04f9db6.chunk.js": "/bowtax/static/js/787.b04f9db6.chunk.js",
+    "index.html": "/bowtax/index.html",
+    "main.c75f0587.css.map": "/bowtax/static/css/main.c75f0587.css.map",
+    "main.5cbf3765.js.map": "/bowtax/static/js/main.5cbf3765.js.map",
+    "787.b04f9db6.chunk.js.map": "/bowtax/static/js/787.b04f9db6.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.c75f0587.css",
+    "static/js/main.5cbf3765.js"
+  ]
+}
