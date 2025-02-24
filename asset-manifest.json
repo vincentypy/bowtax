@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/bowtax/static/css/main.c75f0587.css",
-    "main.js": "/bowtax/static/js/main.5cbf3765.js",
-    "static/js/787.b04f9db6.chunk.js": "/bowtax/static/js/787.b04f9db6.chunk.js",
+    "main.js": "/bowtax/static/js/main.2d4cb59a.js",
+    "static/js/787.7d71b9e3.chunk.js": "/bowtax/static/js/787.7d71b9e3.chunk.js",
     "index.html": "/bowtax/index.html",
     "main.c75f0587.css.map": "/bowtax/static/css/main.c75f0587.css.map",
-    "main.5cbf3765.js.map": "/bowtax/static/js/main.5cbf3765.js.map",
-    "787.b04f9db6.chunk.js.map": "/bowtax/static/js/787.b04f9db6.chunk.js.map"
+    "main.2d4cb59a.js.map": "/bowtax/static/js/main.2d4cb59a.js.map",
+    "787.7d71b9e3.chunk.js.map": "/bowtax/static/js/787.7d71b9e3.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.c75f0587.css",
-    "static/js/main.5cbf3765.js"
+    "static/js/main.2d4cb59a.js"
   ]
 }
