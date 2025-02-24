@@ -209,8 +209,8 @@ const resources = {
       "hintSelfMPF": "課稅年度內的總供款；上限$18,000",
       "hintSelfMPFV": "年金保費及強積金自願性供款，每名受保人上限$60,000；須繳稅的夫婦之間可分配延期年金保費的稅務扣除，以申請合共120,000元的扣除總額；",
       "hintSelfAnnuity": "年金保費及強積金自願性供款，每名受保人上限$60,000；須繳稅的夫婦之間可分配延期年金保費的稅務扣除，以申請合共120,000元的扣除總額；",
-      "hintSelfMPFV2": "不能超過港元100,000。",
-      "hintSelfHomeLoanInterest": "最高限額為上限港元100,000。",
+      "hintSelfMPFV2": "不能超過港元120,000。",
+      "hintSelfHomeLoanInterest": "最高限額為上限港元120,000。",
 
       "hintSectionVhis": "每名納税人就每名受保人可獲容許最高扣除額為8,000元。",
       "hintSectionEldery": "每位受養人最高扣除額港元100,000，上限：4人",
