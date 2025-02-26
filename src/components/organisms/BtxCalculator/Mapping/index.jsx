@@ -1446,7 +1446,7 @@ export function resultCore(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
 export function showResult(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried) {
   parent.STCOut = STCOut;
 
-  const refund = 3000;
+  const refund = 1500;
 
   const taxMapping = calResult(taxtype, STCOut, YrEnd, hasTaxRebate, isMarried);
   const {out: result} = resultCore(STCOut, taxtype, YrEnd, hasTaxRebate, isMarried);
